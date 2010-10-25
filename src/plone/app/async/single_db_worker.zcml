@@ -1,0 +1,20 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+  <utility factory=".config.InitSingleDBWorker" />
+
+  <subscriber
+    for="zc.async.interfaces.IDispatcherActivated"
+    handler="zc.async.subscribers.agent_installer"
+    />
+
+  <subscriber
+    for="zc.async.interfaces.IDispatcherActivated"
+    handler=".subscribers.notifyQueueReady"
+    />
+
+  <subscriber
+    for="plone.app.async.interfaces.IQueueReady"
+    handler=".subscribers.configureQueue"
+    />
+
+</configure>
