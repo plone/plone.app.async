@@ -1,7 +1,15 @@
 Changelog
 =========
 
-1.0a6 - Unreleased
+1.0a7 - unreleased
+------------------
+
+- conditionally import zope.app.keyreference since it
+  seems like plone 4 has conflicts with the package
+  [vangheem]
+  
+
+1.0a6 - 2010-10-14
 ------------------
 
 - First public release 

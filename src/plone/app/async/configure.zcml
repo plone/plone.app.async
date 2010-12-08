@@ -1,11 +1,12 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:five="http://namespaces.zope.org/five"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
     i18n_domain="plone.app.async"
     xmlns:browser="http://namespaces.zope.org/browser">
 
   <!-- zc.async related imports -->
-  <include package="zope.app.keyreference" />
+  <include zcml:condition="installed zope.app.keyreference" package="zope.app.keyreference" />
 
   <include package="zc.async" />
   <include package="zc.z3monitor" />
