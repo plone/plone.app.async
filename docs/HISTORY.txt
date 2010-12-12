@@ -4,6 +4,9 @@ Changelog
 1.0a7 - unreleased
 ------------------
 
+- Fix for async job started by anonymous user
+  [naro]
+
 - conditionally import zope.app.keyreference since it
   seems like plone 4 has conflicts with the package
   [vangheem]

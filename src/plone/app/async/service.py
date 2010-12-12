@@ -4,10 +4,10 @@ from zope.component import getUtility
 from zope.interface import implements
 from zope.event import notify
 from zope.app.component.hooks import setSite
-from Acquisition import aq_inner, aq_parent
 from zExceptions import BadRequest
 from AccessControl.SecurityManagement import noSecurityManager,\
     newSecurityManager
+from AccessControl.User import nobody
 from Products.CMFCore.interfaces import ISiteRoot
 from Products.CMFCore.utils import getToolByName
 from zc.async.interfaces import KEY
@@ -33,16 +33,18 @@ def _executeAsUser(portal_path, context_path, user_id, uf_path, func, *args, **k
                 raise BadRequest(
                     'Portal path %s not found' % '/'.join(portal_path))
             setSite(portal)
-
-            acl_users = app.unrestrictedTraverse(uf_path, None)
-            if acl_users is None:
-                raise BadRequest(
-                    'Userfolder path %s not found' % '/'.join(uf_path))
-            user = acl_users.getUserById(user_id)
-            if user is None:
-                raise BadRequest('User %s not found' % user_id)
-            if not hasattr(user, 'aq_base'):
-                user = user.__of__(acl_users)
+            if uf_path and user_id:
+                acl_users = app.unrestrictedTraverse(uf_path, None)
+                if acl_users is None:
+                    raise BadRequest(
+                        'Userfolder path %s not found' % '/'.join(uf_path))
+                user = acl_users.getUserById(user_id)
+                if user is None:
+                    raise BadRequest('User %s not found' % user_id)
+                if not hasattr(user, 'aq_base'):
+                    user = user.__of__(acl_users)
+            else:
+                user = nobody
             newSecurityManager(None, user)
 
             context = portal.unrestrictedTraverse(context_path, None)
@@ -91,9 +93,14 @@ class AsyncService(local):
         portal = getUtility(ISiteRoot)
         portal_path = portal.getPhysicalPath()
         pm = getToolByName(portal, 'portal_membership')
-        user = pm.getAuthenticatedMember()
-        user_id = user.getId()
-        uf_path = user.aq_parent.aq_parent.getPhysicalPath()
+        if pm.isAnonymousUser():
+            user = None
+            user_id = ''
+            uf_path = ''
+        else:
+            user = pm.getAuthenticatedMember()
+            user_id = user.getId()
+            uf_path = user.aq_parent.aq_parent.getPhysicalPath()
         context_path = context.getPhysicalPath()
         job = Job(_executeAsUser, portal_path, context_path, user_id, uf_path,
                   func, *args, **kwargs)
@@ -112,9 +119,14 @@ class AsyncService(local):
         portal = getUtility(ISiteRoot)
         portal_path = portal.getPhysicalPath()
         pm = getToolByName(portal, 'portal_membership')
-        user = pm.getAuthenticatedMember()
-        user_id = user.getId()
-        uf_path = user.aq_parent.aq_parent.getPhysicalPath()
+        if pm.isAnonymousUser():
+            user = None
+            user_id = ''
+            uf_path = ''
+        else:
+            user = pm.getAuthenticatedMember()
+            user_id = user.getId()
+            uf_path = user.aq_parent.aq_parent.getPhysicalPath()
         scheduled = []
         for (func, context, args, kwargs) in job_infos:
             context_path = context.getPhysicalPath()
