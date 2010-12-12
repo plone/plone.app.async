@@ -40,6 +40,10 @@ def createDocumentAndPublish(context, anid, title, description, body):
 def reindexDocument(context):
     context.reindexObject()
 
+def searchForDocument(context, doc_id):
+    ct = getToolByName(context, 'portal_catalog')
+    return len(ct.searchResults(getId = doc_id))
+
 
 class TestSimpleJob(AsyncTestCase):
     """
@@ -157,7 +161,29 @@ class TestSimpleJob(AsyncTestCase):
         res = ct.searchResults(Description='bar')
         self.assertEqual(len(res), 2)
 
+    def test_job_as_anonymous(self):
+        # Add new document
+        self.folder.invokeFactory('Document', 'anid6',
+            title='Foo', description='Foo', text='foo')
+        doc = self.folder['anid6']
+        wt = getToolByName(self.folder, 'portal_workflow')
+        # Document must be private (not accessible by anon)
+        self.failUnless(wt.getInfoFor(doc, 'review_state') == 'private')
 
+        job = self.async.queueJob(searchForDocument, doc, doc.getId())
+        transaction.commit()
+        # ok, owner can search for it
+        self.assertEqual(wait_for_result(job), 1)
+
+        # Let's try as anoymous
+        self.logout()
+
+        job = self.async.queueJob(searchForDocument, doc, doc.getId())
+        transaction.commit()
+        # not accessible by anon
+        self.assertEqual(wait_for_result(job), 0)
+
+        
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()

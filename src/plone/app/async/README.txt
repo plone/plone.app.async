@@ -44,6 +44,8 @@ In real life the job would be exectuted by the worker. In the tests we need to
 commit in order to let the  dispatcher become aware of the job and execute it.
 Also we wait for the job to complete before continuing with the test.
 
+    >>> import transaction
+    >>> from zc.async.testing import wait_for_result
     >>> transaction.commit()
     >>> wait_for_result(job)
     42
