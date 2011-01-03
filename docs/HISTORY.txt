@@ -4,18 +4,19 @@ Changelog
 1.0a7 - unreleased
 ------------------
 
-- Fix for async job started by anonymous user
+- Conditionally include zope.app.keyreference ZCML.
+  [vangheem]
+
+- Fix for async jobs started by anonymous user.
   [naro]
 
-- conditionally import zope.app.keyreference since it
-  seems like plone 4 has conflicts with the package
-  [vangheem]
-  
+- Add full set of example buildouts.
+  [stefan]
 
 1.0a6 - 2010-10-14
 ------------------
 
-- First public release 
+- First public release.
   [ggozad]
 
 1.0a5 - 2010-10-14
