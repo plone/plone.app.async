@@ -1,15 +1,15 @@
+import threading
 import Zope2
-from threading import local
+
 from zope.component import getUtility
 from zope.interface import implements
 from zope.event import notify
 from zope.app.component.hooks import setSite
 from zExceptions import BadRequest
 from AccessControl.SecurityManagement import noSecurityManager,\
-    newSecurityManager
-from AccessControl.User import nobody
+    newSecurityManager, getSecurityManager
+from AccessControl.User import SpecialUser
 from Products.CMFCore.interfaces import ISiteRoot
-from Products.CMFCore.utils import getToolByName
 from zc.async.interfaces import KEY
 from zc.async.job import serial, parallel, Job
 from plone.app.async.interfaces import IAsyncDatabase, IAsyncService
@@ -21,7 +21,17 @@ def makeJob(func, context, *args, **kwargs):
     return (func, context, args, kwargs)
 
 
-def _executeAsUser(portal_path, context_path, user_id, uf_path, func, *args, **kwargs):
+def _getAuthenticatedUser():
+    """Get user info."""
+    user = getSecurityManager().getUser()
+    if isinstance(user, SpecialUser):
+        return (), None
+    acl_users = user.aq_parent
+    return acl_users.getPhysicalPath(), user.getId()
+
+
+def _executeAsUser(context_path, portal_path, uf_path, user_id, func, *args, **kwargs):
+    """Reconstruct environment and execute func."""
     transaction = Zope2.zpublisher_transactions_manager # Supports isDoomed
     transaction.begin()
     app = Zope2.app()
@@ -33,7 +43,8 @@ def _executeAsUser(portal_path, context_path, user_id, uf_path, func, *args, **k
                 raise BadRequest(
                     'Portal path %s not found' % '/'.join(portal_path))
             setSite(portal)
-            if uf_path and user_id:
+
+            if uf_path:
                 acl_users = app.unrestrictedTraverse(uf_path, None)
                 if acl_users is None:
                     raise BadRequest(
@@ -41,11 +52,7 @@ def _executeAsUser(portal_path, context_path, user_id, uf_path, func, *args, **k
                 user = acl_users.getUserById(user_id)
                 if user is None:
                     raise BadRequest('User %s not found' % user_id)
-                if not hasattr(user, 'aq_base'):
-                    user = user.__of__(acl_users)
-            else:
-                user = nobody
-            newSecurityManager(None, user)
+                newSecurityManager(None, user)
 
             context = portal.unrestrictedTraverse(context_path, None)
             if context is None:
@@ -64,16 +71,18 @@ def _executeAsUser(portal_path, context_path, user_id, uf_path, func, *args, **k
 
 
 def job_success_callback(result):
-    ev = JobSuccess(result)
-    notify(ev)
+    """Fire event on job success."""
+    notify(JobSuccess(result))
 
 
 def job_failure_callback(result):
-    ev = JobFailure(result)
-    notify(ev)
+    """Fire event on job failure."""
+    notify(JobFailure(result))
 
 
-class AsyncService(local):
+class AsyncService(threading.local):
+    """Utility providing async execution services to Plone.
+    """
     implements(IAsyncService)
 
     def __init__(self):
@@ -81,6 +90,7 @@ class AsyncService(local):
         self._conn = None
 
     def getQueues(self):
+        """Return the queues container."""
         db = getUtility(IAsyncDatabase)
         if self._db is not db:
             self._db = db
@@ -90,19 +100,12 @@ class AsyncService(local):
         return self._conn.root()[KEY]
 
     def queueJobInQueue(self, queue, quota_names, func, context, *args, **kwargs):
+        """Queue a job in the specified queue."""
         portal = getUtility(ISiteRoot)
         portal_path = portal.getPhysicalPath()
-        pm = getToolByName(portal, 'portal_membership')
-        if pm.isAnonymousUser():
-            user = None
-            user_id = ''
-            uf_path = ''
-        else:
-            user = pm.getAuthenticatedMember()
-            user_id = user.getId()
-            uf_path = user.aq_parent.aq_parent.getPhysicalPath()
         context_path = context.getPhysicalPath()
-        job = Job(_executeAsUser, portal_path, context_path, user_id, uf_path,
+        uf_path, user_id = _getAuthenticatedUser()
+        job = Job(_executeAsUser, context_path, portal_path, uf_path, user_id,
                   func, *args, **kwargs)
         if quota_names:
             job.quota_names = quota_names
@@ -112,26 +115,20 @@ class AsyncService(local):
         return job
 
     def queueJob(self, func, context, *args, **kwargs):
+        """Queue a job in the default queue."""
         queue = self.getQueues()['']
         return self.queueJobInQueue(queue, ('default',), func, context, *args, **kwargs)
 
     def _queueJobsInQueue(self, queue, quota_names, job_infos, serialize=True):
+        """Queue multiple jobs in the specified queue."""
         portal = getUtility(ISiteRoot)
         portal_path = portal.getPhysicalPath()
-        pm = getToolByName(portal, 'portal_membership')
-        if pm.isAnonymousUser():
-            user = None
-            user_id = ''
-            uf_path = ''
-        else:
-            user = pm.getAuthenticatedMember()
-            user_id = user.getId()
-            uf_path = user.aq_parent.aq_parent.getPhysicalPath()
+        uf_path, user_id = _getAuthenticatedUser()
         scheduled = []
         for (func, context, args, kwargs) in job_infos:
             context_path = context.getPhysicalPath()
-            job = Job(_executeAsUser, portal_path, context_path, user_id,
-                      uf_path, func, *args, **kwargs)
+            job = Job(_executeAsUser, context_path, portal_path, uf_path, user_id,
+                      func, *args, **kwargs)
             scheduled.append(job)
         if serialize:
             job = serial(*scheduled)
@@ -145,15 +142,19 @@ class AsyncService(local):
         return job
 
     def queueSerialJobsInQueue(self, queue, quota_names, *job_infos):
+        """Queue serial jobs in the specified queue."""
         return self._queueJobsInQueue(queue, quota_names, job_infos, serialize=True)
 
     def queueParallelJobsInQueue(self, queue, quota_names, *job_infos):
+        """Queue parallel jobs in the specified queue."""
         return self._queueJobsInQueue(queue, quota_names, job_infos, serialize=False)
 
     def queueSerialJobs(self, *job_infos):
+        """Queue serial jobs in the default queue."""
         queue = self.getQueues()['']
         return self.queueSerialJobsInQueue(queue, ('default',), *job_infos)
 
     def queueParallelJobs(self, *job_infos):
+        """Queue parallel jobs in the default queue."""
         queue = self.getQueues()['']
         return self.queueParallelJobsInQueue(queue, ('default',), *job_infos)
