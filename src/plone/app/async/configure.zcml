@@ -1,19 +1,20 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
-    xmlns:five="http://namespaces.zope.org/five"
     xmlns:zcml="http://namespaces.zope.org/zcml"
-    i18n_domain="plone.app.async"
-    xmlns:browser="http://namespaces.zope.org/browser">
+    i18n_domain="plone.app.async">
 
-  <!-- zc.async related imports -->
+  <!-- Plone 3.x -->
   <include zcml:condition="installed zope.app.keyreference" package="zope.app.keyreference" />
 
+  <!-- Plone 4.x -->
+  <include zcml:condition="installed zope.keyreference" package="zope.keyreference" />
+
+  <!-- zc.async -->
   <include package="zc.async" />
-  <include package="zc.z3monitor" />
   <include package="zc.async" file="dispatcher.zcml" />
+  <include package="zc.z3monitor" />
 
   <!-- async service -->
-  <utility provides=".interfaces.IAsyncService"
-      factory=".service.AsyncService" />
+  <utility provides=".interfaces.IAsyncService" factory=".service.AsyncService" />
 
 </configure>
