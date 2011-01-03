@@ -1,6 +1,7 @@
 import transaction
 from zope.component import provideHandler, getGlobalSiteManager
 from zc.async.testing import wait_for_result
+from Products.PloneTestCase.setup import PLONE40
 from plone.app.async.tests.base import AsyncTestCase
 from plone.app.async.interfaces import IJobSuccess, IJobFailure
 
@@ -50,8 +51,13 @@ class TestResultHandler(AsyncTestCase):
         transaction.commit()
         wait_for_result(job)
         result = events[0].object
-        self.assertEquals(str(result.type), 'exceptions.RuntimeError')
-        self.assertEquals(str(result.value), 'FooBar')
+
+        if PLONE40:
+            self.assertEquals(str(result.type), "<type 'exceptions.RuntimeError'>")
+            self.assertEquals(str(result.value), 'FooBar')
+        else:
+            self.assertEquals(str(result.type), 'exceptions.RuntimeError')
+            self.assertEquals(str(result.value), 'FooBar')
 
 
 def test_suite():

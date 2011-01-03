@@ -13,6 +13,10 @@ Changelog
 - Add full set of example buildouts.
   [stefan]
 
+- Make tests pass under Plone 3 and 4. Exception representations have changed
+  for some odd reason.
+  [stefan]
+
 1.0a6 - 2010-10-14
 ------------------
 

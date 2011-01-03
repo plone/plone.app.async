@@ -1,5 +1,6 @@
 import transaction
 from zc.async.testing import wait_for_result
+from Products.PloneTestCase.setup import PLONE40
 from plone.app.async.tests.base import AsyncTestCase
 
 
@@ -40,7 +41,11 @@ class TestCallbacks(AsyncTestCase):
         self.assertEquals(results, ["Failure"])
         failure = job.result
         exception = failure.value
-        self.assertEquals(str(exception), 'The id "1" is invalid - it is already in use.')
+
+        if PLONE40:
+            self.assertEquals(str(exception), 'The id "1" is invalid--it is already in use.')
+        else:
+            self.assertEquals(str(exception), 'The id "1" is invalid - it is already in use.')
 
 
 def test_suite():
