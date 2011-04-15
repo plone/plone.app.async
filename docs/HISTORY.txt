@@ -1,8 +1,12 @@
 Changelog
 =========
 
+
 1.1 - Unreleased
 ----------------
+
+- Add MANIFEST.in.
+  [WouterVH]
 
 
 1.0 - 2011-01-03
@@ -21,11 +25,13 @@ Changelog
   for some odd reason.
   [stefan]
 
+
 1.0a6 - 2010-10-14
 ------------------
 
 - First public release.
   [ggozad]
+
 
 1.0a5 - 2010-10-14
 ------------------
@@ -34,11 +40,13 @@ Changelog
   of the userfolder and use that to reinstate the user.
   [mj]
 
+
 1.0a4 - 2010-09-09
 ------------------
 
 - Use multi-db setup in tests to keep testcaselayer working as expected.
   [stefan, ggozad]
+
 
 1.0a3 - 2010-09-01
 ------------------
@@ -46,11 +54,13 @@ Changelog
 - Separate helper function from test setup so it can be used in non-test code.
   [witsch]
 
+
 1.0a2 - 2010-08-30
 ------------------
 
 - Made separate zcml configurations for single/multi and instance/worker.
   [stefan, ggozad]
+
 
 1.0a1 - 2010-08-25
 ------------------
