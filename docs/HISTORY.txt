@@ -8,6 +8,10 @@ Changelog
 - Add MANIFEST.in.
   [WouterVH]
 
+- Change zcml conditional for zope.app.keyreference for
+  the plone-4 feature. This was breaking plone.app.dexterity
+  since it depends on zope.app.keyreference
+  [vangheem]
 
 1.0 - 2011-01-03
 ----------------

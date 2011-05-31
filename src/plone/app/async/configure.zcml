@@ -4,10 +4,10 @@
     i18n_domain="plone.app.async">
 
   <!-- Plone 3.x -->
-  <include zcml:condition="installed zope.app.keyreference" package="zope.app.keyreference" />
+  <include zcml:condition="not-have plone-4" package="zope.app.keyreference" />
 
   <!-- Plone 4.x -->
-  <include zcml:condition="installed zope.keyreference" package="zope.keyreference" />
+  <include zcml:condition="have plone-4" package="zope.keyreference" />
 
   <!-- zc.async -->
   <include package="zc.async" />
