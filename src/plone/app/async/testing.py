@@ -17,6 +17,36 @@ from collective.testcaselayer.ptc import BasePTCLayer, ptc_layer
 from plone.app.async.interfaces import IAsyncDatabase, IQueueReady
 from plone.app.async.subscribers import notifyQueueReady, configureQueue
 
+try:
+    from zope.component.hooks import getSite, setSite
+except ImportError:
+    from zope.app.component.hooks import getSite, setSite
+
+try:
+    from Zope2.App import zcml
+except ImportError:
+    from Products.Five import zcml
+
+
+def loadZCMLFile(config, package=None, execute=True):
+    # Unset current site for Zope 2.13
+    saved = getSite()
+    setSite(None)
+    try:
+        zcml.load_config(config, package, execute)
+    finally:
+        setSite(saved)
+
+
+def loadZCMLString(string):
+    # Unset current site for Zope 2.13
+    saved = getSite()
+    setSite(None)
+    try:
+        zcml.load_string(string)
+    finally:
+        setSite(saved)
+
 
 _dispatcher_uuid = uuid.uuid1()
 _async_layer_db = None
@@ -52,7 +82,7 @@ class AsyncLayer(BasePTCLayer):
     def afterSetUp(self):
         global _async_layer_db
         import plone.app.async
-        self.loadZCML('configure.zcml', package=plone.app.async)
+        loadZCMLFile('configure.zcml', plone.app.async)
         main_db = self.app._p_jar.db()
         _async_layer_db = createAsyncDB(main_db)
         component.provideUtility(_async_layer_db, IAsyncDatabase)
