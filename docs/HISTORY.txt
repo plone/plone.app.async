@@ -1,7 +1,6 @@
 Changelog
 =========
 
-
 1.1 - Unreleased
 ----------------
 
@@ -12,6 +11,7 @@ Changelog
   the plone-4 feature. This was breaking plone.app.dexterity
   since it depends on zope.app.keyreference
   [vangheem]
+
 
 1.0 - 2011-01-03
 ----------------
