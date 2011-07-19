@@ -12,6 +12,9 @@ Changelog
   since it depends on zope.app.keyreference
   [vangheem]
 
+- Always use loadZCML in testcase layers to not break under Zope 2.13.
+  [stefan]
+
 
 1.0 - 2011-01-03
 ----------------
