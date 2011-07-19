@@ -52,7 +52,7 @@ class AsyncLayer(BasePTCLayer):
     def afterSetUp(self):
         global _async_layer_db
         import plone.app.async
-        self.loadZCML('configure.zcml', plone.app.async)
+        self.loadZCML('configure.zcml', package=plone.app.async)
         main_db = self.app._p_jar.db()
         _async_layer_db = createAsyncDB(main_db)
         component.provideUtility(_async_layer_db, IAsyncDatabase)
