@@ -3,10 +3,14 @@ from zope.component import getUtility
 from zope.formlib import form
 from plone.app.async.utils import wait_for_all_jobs
 from plone.app.form.interfaces import IPlonePageForm
-from Products.Five import zcml
-from Products.Five.formlib import formbase
 from plone.app.async.interfaces import IAsyncService
+from plone.app.async.testing import loadZCMLString
 from plone.app.async.tests.base import FunctionalAsyncTestCase
+
+try:
+    from five.formlib import formbase
+except ImportError:
+    from Products.Five.formlib import formbase
 
 
 def createDocument(context, anid, title, description, body):
@@ -39,6 +43,7 @@ class TestView(formbase.PageForm):
         self.testing()
         return ''
 
+
 register_view_zcml = """
 <configure
     xmlns="http://namespaces.zope.org/zope"
@@ -60,7 +65,7 @@ class TestFunctional(FunctionalAsyncTestCase):
     """
 
     def test_view(self):
-        zcml.load_string(register_view_zcml)
+        loadZCMLString(register_view_zcml)
         browser = self.getBrowser()
         browser.open(self.folder.absolute_url() + "/@@testview")
         browser.getControl("Apply").click()
