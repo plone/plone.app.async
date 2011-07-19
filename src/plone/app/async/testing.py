@@ -6,8 +6,6 @@ from zope import component
 from zope.app.appsetup.interfaces import DatabaseOpened
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
-from Products.Five import zcml
-from Products.Five import fiveconfigure
 from zc.async import dispatcher
 from zc.async.subscribers import QueueInstaller
 from zc.async.subscribers import ThreadedDispatcherInstaller
@@ -53,10 +51,8 @@ class AsyncLayer(BasePTCLayer):
 
     def afterSetUp(self):
         global _async_layer_db
-        fiveconfigure.debug_mode = True
         import plone.app.async
-        zcml.load_config('configure.zcml', plone.app.async)
-        fiveconfigure.debug_mode = False
+        self.loadZCML('configure.zcml', plone.app.async)
         main_db = self.app._p_jar.db()
         _async_layer_db = createAsyncDB(main_db)
         component.provideUtility(_async_layer_db, IAsyncDatabase)
