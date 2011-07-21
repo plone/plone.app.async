@@ -7,12 +7,15 @@ Changelog
 - Add MANIFEST.in.
   [WouterVH]
 
-- Change zcml conditional for zope.app.keyreference for
-  the plone-4 feature. This was breaking plone.app.dexterity
-  since it depends on zope.app.keyreference
+- Change zcml:condition for zope.(app.)keyreference to use the plone-4
+  feature.
   [vangheem]
 
-- Always use loadZCML in testcase layers to not break under Zope 2.13.
+- Always use loadZCMLFile in testcase layers to not break under Zope 2.13.
+  [stefan]
+
+- Avoid excessive ZODB growth by increasing the dispatcher ping intervals.
+  https://mail.zope.org/pipermail/zope-dev/2011-June/043146.html
   [stefan]
 
 
