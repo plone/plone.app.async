@@ -9,6 +9,11 @@
 
   <subscriber
     for="zc.async.interfaces.IDispatcherActivated"
+    handler=".subscribers.configureDispatcher"
+    />
+
+  <subscriber
+    for="zc.async.interfaces.IDispatcherActivated"
     handler=".subscribers.notifyQueueReady"
     />
 
