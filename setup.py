@@ -36,7 +36,8 @@ setup(name='plone.app.async',
           'zc.monitor',
           'zc.z3monitor',
           'collective.testcaselayer',
-          'simplejson'
+          'zope.keyreference',
+          'simplejson',
       ],
       extras_require={'plone4_test': 'five.intid'},
       entry_points={
