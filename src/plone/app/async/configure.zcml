@@ -17,4 +17,11 @@
   <!-- async service -->
   <utility provides=".interfaces.IAsyncService" factory=".service.AsyncService" />
 
+  <permission
+    id="plone.app.async.ManageJobQueue"
+    title="plone.app.async: Manage job queue"
+    />
+
+  <include package=".browser" />
+
 </configure>

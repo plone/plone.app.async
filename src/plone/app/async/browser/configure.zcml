@@ -1,0 +1,21 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="plone.app.async">
+
+  <browser:page
+    name="manage-job-queue"
+    for="Products.CMFCore.interfaces.ISiteRoot"
+    permission="plone.app.async.ManageJobQueue"
+    class=".queue.QueueView"
+    template="queue.pt"
+    />
+  
+  <browser:page
+    name="queue-job"
+    for="Products.CMFCore.interfaces.ISiteRoot"
+    permission="plone.app.async.ManageJobQueue"
+    class=".queue.TestJob"
+    />
+
+</configure>
