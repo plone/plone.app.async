@@ -1,4 +1,6 @@
+import rwproperty
 import threading
+import types
 import zc.async.job
 import Zope2
 from AccessControl.SecurityManagement import noSecurityManager,\
@@ -6,6 +8,7 @@ from AccessControl.SecurityManagement import noSecurityManager,\
 from AccessControl.User import SpecialUser
 from zope.site.hooks import getSite, setSite
 from Products.CMFCore.utils import getToolByName
+from OFS.interfaces import ITraversable
 
 
 tldata = threading.local()
@@ -20,26 +23,26 @@ class Job(zc.async.job.Job):
     uf_path = None
     user_id = None
 
-    context_path = None
-    func_name = None
+    _callable_path = None
 
-    def _bind_and_call(self, *args, **kw):
-        im_self = tldata.app.unrestrictedTraverse(self.context_path)
-        func = getattr(im_self, self.func_name)
-        return func(*args, **kw)
+    @property
+    def callable(self):
+        if self._callable_path is not None:
+            path = self._callable_path
+            callable_root = tldata.app.unrestrictedTraverse(path)
+            return getattr(callable_root, self._callable_name)
+        return super(Job, self).callable
+    @rwproperty.setproperty
+    def callable(self, value):
+        if isinstance(value, types.MethodType):
+            if ITraversable.providedBy(value.im_self):
+                self._callable_path = value.im_self.getPhysicalPath()
+                self._callable_name = value.__name__
+        else:
+            zc.async.job.Job.callable.fset(self, value)
 
     def __init__(self, *args, **kwargs):
         super(Job, self).__init__(*args, **kwargs)
-
-        # Instance methods cannot be directly pickled, so instead
-        # we store the context path and method name on the job
-        # and reconstitute the method in _bind_and_call
-        if hasattr(self.callable, 'im_self'):
-            im_self = self.callable.im_self
-            if hasattr(im_self, 'getPhysicalPath'):
-                self.context_path = im_self.getPhysicalPath()
-                self.func_name = self.callable.func_name
-                self.callable = self._bind_and_call
 
         portal = getToolByName(getSite(), 'portal_url').getPortalObject()
         self.portal_path = portal.getPhysicalPath()
