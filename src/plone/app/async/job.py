@@ -34,10 +34,9 @@ class Job(zc.async.job.Job):
         return super(Job, self).callable
     @rwproperty.setproperty
     def callable(self, value):
-        if isinstance(value, types.MethodType):
-            if ITraversable.providedBy(value.im_self):
-                self._callable_path = value.im_self.getPhysicalPath()
-                self._callable_name = value.__name__
+        if isinstance(value, types.MethodType) and ITraversable.providedBy(value.im_self):
+            self._callable_path = value.im_self.getPhysicalPath()
+            self._callable_name = value.__name__
         else:
             zc.async.job.Job.callable.fset(self, value)
 
