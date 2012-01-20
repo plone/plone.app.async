@@ -14,6 +14,13 @@ def doom():
     transaction.doom()
 
 
+def doom_once(result):
+    doom_once.retries += 1
+    if doom_once.retries < 2:
+        transaction.doom()
+    return 'success!'
+
+
 def fail_once():
     fail_once.retries += 1
     if fail_once.retries == 1:
@@ -71,3 +78,13 @@ class TestJob(AsyncTestCase):
         wait_for_result(job)
         self.assertTrue(2, fail_once.retries)
         self.assertTrue(job.result > 5)
+
+    def test_callback_retry(self):
+        from plone.app.async import Job, queue
+        doom_once.retries = 0
+        job = queue(Job(addNumbers, 1, 1))
+        job.addCallback(doom_once)
+        transaction.commit()
+        wait_for_result(job)
+        self.assertEqual(2, job.result)
+        self.assertEqual(2, doom_once.retries)
