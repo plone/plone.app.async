@@ -15,3 +15,9 @@ def wait_for_all_jobs(seconds=6, assert_successful=True):
         if assert_successful:
             assert not isinstance(job.result, Failure), str(job.result)
     commit()
+
+
+def queue(job):
+    service = component.getUtility(IAsyncService)
+    queue = service.getQueues()['']
+    return queue.put(job)
