@@ -37,6 +37,7 @@ setup(name='plone.app.async',
           'zc.z3monitor',
           'collective.testcaselayer',
           'zope.keyreference',
+          'rwproperty',
           'simplejson',
       ],
       entry_points={
