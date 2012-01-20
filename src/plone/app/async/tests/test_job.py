@@ -1,4 +1,5 @@
 import transaction
+import time
 from zc.async.testing import wait_for_result
 from Products.PloneTestCase.PloneTestCase import default_user
 from plone.app.async.tests.base import AsyncTestCase
@@ -11,6 +12,14 @@ def addNumbers(x1, x2):
 def doom():
     doom.retries += 1
     transaction.doom()
+
+
+def fail_once():
+    fail_once.retries += 1
+    if fail_once.retries == 1:
+        fail_once.start = time.time()
+        raise Exception('Job failed.')
+    return time.time() - fail_once.start
 
 
 class TestJob(AsyncTestCase):
@@ -51,3 +60,14 @@ class TestJob(AsyncTestCase):
         wait_for_result(job)
         self.assertTrue(job.result.type is transaction.interfaces.DoomedTransaction)
         self.assertEqual(5, doom.retries)
+
+    def test_delayed_retry(self):
+        from datetime import timedelta
+        from plone.app.async import Job, queue, RetryWithDelay
+        fail_once.retries = 0
+        job = queue(Job(fail_once))
+        job.retry_policy_factory = RetryWithDelay(timedelta(seconds=5))
+        transaction.commit()
+        wait_for_result(job)
+        self.assertTrue(2, fail_once.retries)
+        self.assertTrue(job.result > 5)
