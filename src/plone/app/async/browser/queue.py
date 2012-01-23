@@ -15,6 +15,12 @@ def filter_jobs(jobs, portal_path):
         if getattr(job, 'portal_path', None) == portal_path:
             yield job
 
+def get_failure(job):
+    if job.status == COMPLETED and isinstance(job.result, Failure):
+        return job.result
+    elif job._retry_policy and job._retry_policy.data.get('job_error', 0):
+        return job._retry_policy.data['last_job_error']
+
 
 class QueueView(BrowserView):
 
@@ -49,7 +55,13 @@ class QueueView(BrowserView):
             return 'Started at %s' % job.active_start
         else:
             if job.begin_after > self.now:
-                return 'Scheduled for %s' % job.begin_after
+                retries = 0
+                if job._retry_policy:
+                    retries = job._retry_policy.data.get('job_error', 0)
+                if retries:
+                    return 'Retry #%s scheduled for %s' % (retries, job.begin_after)
+                else:
+                    return 'Scheduled for %s' % job.begin_after
             else:
                 return 'Queued at %s' % job.begin_after
     
@@ -63,10 +75,11 @@ class QueueView(BrowserView):
         return args
     
     def format_failure(self, job):
-        if job.status != COMPLETED or not isinstance(job.result, Failure):
+        failure = get_failure(job)
+        if failure is None:
             return ''
         
-        res = '%s: %s' % (job.result.type.__name__, job.result.getErrorMessage())
+        res = '%s: %s' % (failure.type.__name__, failure.getErrorMessage())
         res += ' <a href="%s/manage-job-error?id=%s">Details</a>' % (self.context.absolute_url(), u64(job._p_oid))
         return res
 
@@ -79,11 +92,11 @@ class TracebackView(BrowserView):
     def __call__(self, id):
         queue = getUtility(IAsyncService).getQueues()['']
         job = queue._p_jar.get(p64(int(id)))
-        return escape(job.result.getTraceback())
+        failure = get_failure(job)
+        return escape(failure.getTraceback())
 
 
 # Need to show:
-# - retry info (failure, # of retries, when scheduled)
 # - ideally, progress bar based on job annotations
 # - format times in local timezone
 
