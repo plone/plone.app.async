@@ -12,6 +12,13 @@
     />
   
   <browser:page
+    name="manage-job-error"
+    for="Products.CMFCore.interfaces.ISiteRoot"
+    permission="plone.app.async.ManageJobQueue"
+    class=".queue.TracebackView"
+    />
+
+  <browser:page
     name="queue-job"
     for="Products.CMFCore.interfaces.ISiteRoot"
     permission="plone.app.async.ManageJobQueue"
