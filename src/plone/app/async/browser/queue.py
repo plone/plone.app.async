@@ -1,3 +1,4 @@
+from DateTime import DateTime
 from datetime import datetime
 from zope.component import getUtility
 from Products.Five import BrowserView
@@ -8,6 +9,9 @@ from plone.app.async.interfaces import IAsyncService
 from webdav.xmltools import escape
 from ZODB.utils import p64, u64
 import pytz
+
+
+local_zone = DateTime().asdatetime().tzinfo
 
 
 def filter_jobs(jobs, portal_path):
@@ -50,20 +54,20 @@ class QueueView(BrowserView):
 
     def format_timing(self, job):
         if job.status == COMPLETED:
-            return 'Completed at %s' % job.active_end
+            return 'Completed at %s' % self.format_datetime(job.active_end)
         elif job.status == ACTIVE:
-            return 'Started at %s' % job.active_start
+            return 'Started at %s' % self.format_datetime(job.active_start)
         else:
             if job.begin_after > self.now:
                 retries = 0
                 if job._retry_policy:
                     retries = job._retry_policy.data.get('job_error', 0)
                 if retries:
-                    return 'Retry #%s scheduled for %s' % (retries, job.begin_after)
+                    return 'Retry #%s scheduled for %s' % (retries, self.format_datetime(job.begin_after))
                 else:
-                    return 'Scheduled for %s' % job.begin_after
+                    return 'Scheduled for %s' % self.format_datetime(job.begin_after)
             else:
-                return 'Queued at %s' % job.begin_after
+                return 'Queued at %s' % self.format_datetime(job.begin_after)
     
     def format_args(self, job):
         args = ', '.join(custom_repr(a) for a in job.args)
@@ -82,6 +86,9 @@ class QueueView(BrowserView):
         res = '%s: %s' % (failure.type.__name__, failure.getErrorMessage())
         res += ' <a href="%s/manage-job-error?id=%s">Details</a>' % (self.context.absolute_url(), u64(job._p_oid))
         return res
+    
+    def format_datetime(self, dt):
+        return dt.astimezone(local_zone).strftime('%I:%M:%S %p, %Y-%m-%d')
 
     def custom_repr(self, ob):
         return custom_repr(ob)
@@ -98,7 +105,6 @@ class TracebackView(BrowserView):
 
 # Need to show:
 # - ideally, progress bar based on job annotations
-# - format times in local timezone
 
 import time
 from plone.app.async import Job, queue, RetryWithDelay
