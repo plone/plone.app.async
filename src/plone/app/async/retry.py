@@ -26,6 +26,9 @@ class RetryWithDelay(RetryCommonFourTimes):
         return self
 
     def jobError(self, failure, data_cache):
+        if not data_cache:
+            data_cache.update(self.data)
+
         # handle normal retry logic
         res = self._process(failure, data_cache, self.job_exceptions)
 
