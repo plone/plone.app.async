@@ -5,6 +5,8 @@ from zc.async.interfaces import ACTIVE, COMPLETED
 from zc.async.utils import custom_repr
 from zc.twist import Failure
 from plone.app.async.interfaces import IAsyncService
+from webdav.xmltools import escape
+from ZODB.utils import p64, u64
 import pytz
 
 
@@ -59,25 +61,43 @@ class QueueView(BrowserView):
         elif kwargs:
             args = kwargs
         return args
+    
+    def format_failure(self, job):
+        if job.status != COMPLETED or not isinstance(job.result, Failure):
+            return ''
+        
+        res = '%s: %s' % (job.result.type.__name__, job.result.getErrorMessage())
+        res += ' <a href="%s/manage-job-error?id=%s">Details</a>' % (self.context.absolute_url(), u64(job._p_oid))
+        return res
 
     def custom_repr(self, ob):
         return custom_repr(ob)
 
+
+class TracebackView(BrowserView):
+
+    def __call__(self, id):
+        queue = getUtility(IAsyncService).getQueues()['']
+        job = queue._p_jar.get(p64(int(id)))
+        return escape(job.result.getTraceback())
+
+
 # Need to show:
-# - failure info
 # - retry info (failure, # of retries, when scheduled)
 # - ideally, progress bar based on job annotations
+# - format times in local timezone
 
 import time
-from plone.app.async import Job, queue
+from plone.app.async import Job, queue, RetryWithDelay
 
 def foobar():
-    time.sleep(30)
+    time.sleep(5)
     raise Exception('Oh no!')
 
 
 class TestJob(BrowserView):
 
     def __call__(self):
-        queue(Job(foobar))
+        job = queue(Job(foobar))
+        job.retry_policy_factory = RetryWithDelay()
         return self.request.response.redirect('http://localhost:8080/Plone/manage-job-queue')

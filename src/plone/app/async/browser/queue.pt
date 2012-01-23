@@ -60,6 +60,8 @@
       </td>
       <td>
         <div tal:content="python:view.format_timing(job)" />
+        <div tal:define="failure python:view.format_failure(job)"
+             tal:condition="failure" tal:content="structure failure"/>
       </td>
     </tr>
   </table>
