@@ -1,5 +1,4 @@
 from datetime import datetime
-from zope.cachedescriptors.property import Lazy as lazy_property
 from zope.component import getUtility
 from Products.Five import BrowserView
 from zc.async.interfaces import ACTIVE, COMPLETED
@@ -9,9 +8,16 @@ from plone.app.async.interfaces import IAsyncService
 import pytz
 
 
+def filter_jobs(jobs, portal_path):
+    for job in jobs:
+        if getattr(job, 'portal_path', None) == portal_path:
+            yield job
+
+
 class QueueView(BrowserView):
 
     def __call__(self):
+        portal_path = self.context.getPhysicalPath()
         self.now = datetime.now(pytz.UTC)
         self.queued_jobs = []
         self.active_jobs = []
@@ -20,13 +26,13 @@ class QueueView(BrowserView):
 
         service = getUtility(IAsyncService)
         queue = service.getQueues()['']
-        for job in queue:
+        for job in filter_jobs(queue, portal_path):
             self.queued_jobs.append(job)
         for da in queue.dispatchers.values():
             for agent in da.values():
-                for job in agent:
+                for job in filter_jobs(agent, portal_path):
                     self.active_jobs.append(job)
-                for job in agent.completed:
+                for job in filter_jobs(agent.completed, portal_path):
                     if isinstance(job.result, Failure):
                         self.dead_jobs.append(job)
                     else:
