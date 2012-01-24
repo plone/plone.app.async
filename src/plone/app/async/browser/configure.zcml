@@ -7,10 +7,17 @@
     name="manage-job-queue"
     for="Products.CMFCore.interfaces.ISiteRoot"
     permission="plone.app.async.ManageJobQueue"
-    class=".queue.QueueView"
+    class=".queue.JobsView"
     template="queue.pt"
     />
   
+  <browser:page
+    name="jobs.json"
+    for="Products.CMFCore.interfaces.ISiteRoot"
+    permission="plone.app.async.ManageJobQueue"
+    class=".queue.JobsJSON"
+    />
+
   <browser:page
     name="manage-job-error"
     for="Products.CMFCore.interfaces.ISiteRoot"

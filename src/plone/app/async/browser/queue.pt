@@ -10,35 +10,36 @@
 
 <div metal:fill-slot="prefs_configlet_main">
 
+    <script type="text/javascript" tal:content="structure view/js"></script>
+    <style type="text/css">
+    div.job-progress { width:100px; border: solid 1px #000 }
+    div.job-progress span { background: red; }
+    </style>
+
     <h1 class="documentFirstHeading">Job Queue</h1>
 
     <p class="discreet">Manage jobs queued for asynchronous processing.</p>
 
-
     <form class="enableFormTabbing">
-      <fieldset tal:define="jobs view/queued_jobs">
-        <legend>Queued (<span tal:replace="python:len(jobs)"/>)</legend>
-        <p tal:condition="not:jobs">There are no queued jobs.</p>
-        <tal:jobs metal:use-macro="template/macros/job_listing" />
+      <fieldset id="queued-jobs">
+        <legend>Queued (0)</legend>
+        <table class="listing"></table>
         <a href="http://localhost:8080/Plone/@@queue-job">Add job</a>
       </fieldset>
 
-      <fieldset tal:define="jobs view/active_jobs">
-        <legend>Active (<span tal:replace="python:len(jobs)"/>)</legend>
-        <p tal:condition="not:jobs">There are no active jobs.</p>
-        <tal:jobs metal:use-macro="template/macros/job_listing" />
+      <fieldset id="active-jobs">
+        <legend>Active (0)</legend>
+        <table class="listing"></table>
       </fieldset>
             
-      <fieldset tal:define="jobs view/dead_jobs">
-        <legend>Aborted (<span tal:replace="python:len(jobs)"/>)</legend>
-        <p tal:condition="not:jobs">There are no aborted jobs.</p>
-        <tal:jobs metal:use-macro="template/macros/job_listing" />
+      <fieldset id="dead-jobs">
+        <legend>Aborted (0)</legend>
+        <table class="listing"></table>
       </fieldset>
 
-      <fieldset tal:define="jobs view/completed_jobs">
-        <legend>Completed (<span tal:replace="python:len(jobs)"/>)</legend>
-        <p tal:condition="not:jobs">There are no completed jobs.</p>
-        <tal:jobs metal:use-macro="template/macros/job_listing" />
+      <fieldset id="completed-jobs">
+        <legend>Completed (0)</legend>
+        <table class="listing"></table>
       </fieldset>
     </form>
 
@@ -46,25 +47,3 @@
 
 </body>
 </html>
-
-<metal:block metal:define-macro="job_listing">
-  <table class="listing" tal:condition="jobs|nothing">
-    <tr>
-      <th>Job</th>
-      <th>Status</th>
-    </tr>
-    <tr tal:repeat="job jobs">
-      <td>
-        <div><strong tal:content="python:view.custom_repr(job.callable)" /></div>
-        <div>Args: <span tal:replace="python:view.format_args(job)"/></div>
-      </td>
-      <td>
-        <div tal:content="python:view.format_timing(job)" />
-        <div tal:define="progress python:view.format_progress(job)"
-             tal:condition="progress" tal:content="structure progress"/>
-        <div tal:define="failure python:view.format_failure(job)"
-             tal:condition="failure" tal:content="structure failure"/>
-      </td>
-    </tr>
-  </table>
-</metal:block>
