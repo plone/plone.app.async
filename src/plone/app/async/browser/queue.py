@@ -68,7 +68,17 @@ class QueueView(BrowserView):
                     return 'Scheduled for %s' % self.format_datetime(job.begin_after)
             else:
                 return 'Queued at %s' % self.format_datetime(job.begin_after)
-    
+
+    def format_progress(self, job):
+        if job.status != ACTIVE:
+            return ''
+
+        progress = job.annotations.get('progress', 0.0) * 100
+        if not progress:
+            return ''
+
+        return '<div style="width:100px; border: solid 1px #000;"><div style="width:%dpx; background: red;">&nbsp;</div></div>%0.2f%%' % (progress, progress)
+
     def format_args(self, job):
         args = ', '.join(custom_repr(a) for a in job.args)
         kwargs = ', '.join(k + "=" + custom_repr(v) for k, v in job.kwargs.items())
@@ -77,16 +87,16 @@ class QueueView(BrowserView):
         elif kwargs:
             args = kwargs
         return args
-    
+
     def format_failure(self, job):
         failure = get_failure(job)
         if failure is None:
             return ''
-        
+
         res = '%s: %s' % (failure.type.__name__, failure.getErrorMessage())
         res += ' <a href="%s/manage-job-error?id=%s">Details</a>' % (self.context.absolute_url(), u64(job._p_oid))
         return res
-    
+
     def format_datetime(self, dt):
         return dt.astimezone(local_zone).strftime('%I:%M:%S %p, %Y-%m-%d')
 
@@ -108,9 +118,13 @@ class TracebackView(BrowserView):
 
 import time
 from plone.app.async import Job, queue, RetryWithDelay
+import zc.async
 
 def foobar():
-    time.sleep(5)
+    MAX = 20
+    for i in range(MAX):
+        time.sleep(5)
+        zc.async.local.setLiveAnnotation('progress', i / float(MAX))
     raise Exception('Oh no!')
 
 
