@@ -22,7 +22,7 @@ def filter_jobs(jobs, portal_path):
 def get_failure(job):
     if job.status == COMPLETED and isinstance(job.result, Failure):
         return job.result
-    elif job._retry_policy and job._retry_policy.data.get('job_error', 0):
+    elif job.status not in (ACTIVE, COMPLETED) and job._retry_policy and job._retry_policy.data.get('job_error', 0):
         return job._retry_policy.data['last_job_error']
 
 
