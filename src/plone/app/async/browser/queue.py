@@ -1,3 +1,4 @@
+import inspect
 from DateTime import DateTime
 from datetime import datetime
 from zope.cachedescriptors.property import Lazy as lazy_property
@@ -28,11 +29,15 @@ class JobsView(BrowserView):
     js = """
 jQuery(function($) {
   var update = function() {
+    var escape = function(s) {
+        return s.replace('<', '&lt;').replace('>', '&gt;');
+    }
+
     $.fn.render = function(data) {
       var rows = ['<tr><th>Job</th><th>Status</th></tr>'];
       $(data).each(function(i, job) {
-        row = ['<tr><td><div><strong>' + job.callable + '</strong></div>'];
-        row.push('<div>' + job.args + '</div></td>');
+        row = ['<tr><td><div><strong>' + escape(job.callable) + '</strong></div>'];
+        row.push('<div>' + escape(job.args) + '</div></td>');
         row.push('<td>' + job.status);
         if (job.progress)
           row.push('<div>' + job.progress + '</div>');
@@ -45,7 +50,7 @@ jQuery(function($) {
       var legend = $('legend', this);
       $('.formTab span', form).eq($('legend', form).index(legend)).html(legend.html().replace('0', data.length));
     };
-  
+
     $.getJSON('jobs.json', function(data) {
       $('#queued-jobs').render(data.queued);
       $('#active-jobs').render(data.active);
@@ -91,6 +96,8 @@ class JobsJSON(BrowserView):
         return datetime.now(pytz.UTC)
 
     def __call__(self):
+        self.request.response.setHeader('Content-Type', 'application/json')
+
         jobs = {
             'queued': [],
             'active': [],
@@ -138,7 +145,14 @@ class JobsJSON(BrowserView):
         return '<div style="width:100px; border: solid 1px #000;"><div style="width:%dpx; background: red;">&nbsp;</div></div>%d%%' % (progress, progress)
 
     def format_args(self, job):
-        args = ', '.join(custom_repr(a) for a in job.args)
+        try:
+            argnames = inspect.getargspec(job.callable).args
+        except:
+            argnames = None
+        if argnames is not None:
+            args = ', '.join('%s=%s' % (k, v) for k, v in zip(argnames, job.args))
+        else:
+            args = ', '.join(custom_repr(a) for a in job.args)
         kwargs = ', '.join(k + "=" + custom_repr(v) for k, v in job.kwargs.items())
         if args and kwargs:
             args += ", " + kwargs
@@ -154,7 +168,7 @@ class JobsJSON(BrowserView):
         res = '%s: %s' % (failure.type.__name__, failure.getErrorMessage())
         res += ' <a href="%s/manage-job-error?id=%s">Details</a>' % (self.context.absolute_url(), u64(job._p_oid))
         return res
-
+    
     def format_datetime(self, dt):
         return dt.astimezone(local_zone).strftime('%I:%M:%S %p, %Y-%m-%d')
 
