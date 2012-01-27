@@ -54,7 +54,8 @@ class Job(zc.async.job.Job):
             self.user_id = user.getId()
 
     def setUp(self):
-        tldata.app = app = Zope2.app()
+        db_name = Zope2.bobo_application._stuff[0].database_name
+        tldata.app = app = Zope2.app(self._p_jar.get_connection(db_name))
 
         portal = app.unrestrictedTraverse(self.portal_path, None)
         old_site = getSite()
