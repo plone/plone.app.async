@@ -28,6 +28,10 @@ def fail_once():
         raise Exception('Job failed.')
     return time.time() - fail_once.start
 
+def deferred_queue():
+    from plone.app.async import queue, Job
+    queue(Job(addNumbers, 1, 1))
+
 
 class TestJob(AsyncTestCase):
 
@@ -88,3 +92,10 @@ class TestJob(AsyncTestCase):
         wait_for_result(job)
         self.assertEqual(2, job.result)
         self.assertEqual(2, doom_once.retries)
+
+    def test_queue_job_during_job(self):
+        from plone.app.async import queue, Job
+        job = queue(Job(deferred_queue))
+        transaction.commit()
+        wait_for_result(job, 900)
+        self.assertTrue(job.result is None)
