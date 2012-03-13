@@ -7,7 +7,10 @@
   <include zcml:condition="not-have plone-4" package="zope.app.keyreference" />
 
   <!-- Plone 4.x -->
-  <include zcml:condition="have plone-4" package="zope.keyreference" />
+  <!-- five.intid redeclare composants !
+    <include zcml:condition="have plone-4" package="zope.keyreference" />
+  -->
+  <include zcml:condition="have plone-4" package="five.intid" />
 
   <!-- zc.async -->
   <include package="zc.async" />
