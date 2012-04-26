@@ -4,7 +4,7 @@ Changelog
 1.2 - Unreleased
 ----------------
 
-- Fix requirements to work correctly with dexterity and
+- Fix includes to work correctly with dexterity and
   to include simplejson.
   [vangheem]
 
