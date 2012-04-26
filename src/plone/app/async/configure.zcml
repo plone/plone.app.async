@@ -3,11 +3,8 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     i18n_domain="plone.app.async">
 
-  <!-- Plone 3.x -->
-  <include zcml:condition="not-have plone-4" package="zope.app.keyreference" />
-
-  <!-- Plone 4.x -->
-  <include zcml:condition="have plone-4" package="zope.keyreference" />
+  <!-- integrates zope.keyreference -->
+  <include package="five.intid" />
 
   <!-- zc.async -->
   <include package="zc.async" />
