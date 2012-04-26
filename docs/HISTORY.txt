@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.2 - Unreleased
+1.2 - 2012-04-26
 ----------------
 
 - Fix includes to work correctly with dexterity and
