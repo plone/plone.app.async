@@ -6,7 +6,7 @@ version = '1.2'
 setup(name='plone.app.async',
       version=version,
       description="Integration package for zc.async allowing asynchronous operations in Plone",
-      long_description=open("README.txt").read() + "\n" +
+      long_description=open("README.rst").read() + "\n" +
           open(join("src", "plone", "app", "async", "README.txt")).read() + "\n" +
           open(join("docs", "HISTORY.txt")).read(),
       classifiers=[

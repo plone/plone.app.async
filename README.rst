@@ -9,14 +9,14 @@ Plone 3 and 4.
 
 Installation
 ============
-You will typically run plone.app.async in a ZEO environment, where you
-will have one or more *worker* instances that act as dispatchers carrying out
-jobs queued by your main zope instances.
+You will typically run ``plone.app.async`` in a ZEO environment, where you
+will have one or more *worker* instances carrying out jobs queued by your
+main zope instances.
 
 For the sake of simplicity it is assumed that you have one instance that can
 queue new jobs, and one worker instance that consumes them, both operating on
 a single database. In this case your buildout configuration will look similar
-to::
+to the following::
 
   [zeo]
   recipe = plone.recipe.zope2zeoserver
@@ -43,7 +43,7 @@ to::
 There are two important stanzas here:
 
 * Each instance has to set the ``ZC_ASYNC_UUID`` environment variable in order
-  to integrate properly with zc.async.
+  to integrate properly with `zc.async`_.
 
 * Each instance loads the ``single_db_instance.zcml`` configuration.
   The worker instance loads the ``single_db_worker.zcml`` configuration
