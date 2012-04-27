@@ -35,7 +35,8 @@ setup(name='plone.app.async',
           'zc.async',
           'zc.monitor',
           'zc.z3monitor',
-          'collective.testcaselayer'
+          'collective.testcaselayer',
+          'simplejson'
       ],
       entry_points={
           'z3c.autoinclude.plugin': 'target=plone',

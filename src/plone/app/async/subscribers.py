@@ -26,7 +26,7 @@ def set_quota(queue, quota_name, size):
 def configureDispatcher(event):
     """Subscriber for IDispatcherActivated."""
     dispatcher = event.object
-    set_ping_intervals(dispatcher, 15*60, 30*60)
+    set_ping_intervals(dispatcher, 2 * 60, 5 * 60)
 
 
 def notifyQueueReady(event):

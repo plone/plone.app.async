@@ -1,8 +1,16 @@
 Changelog
 =========
 
-1.2 - Unreleased
+1.2 - 2012-04-26
 ----------------
+
+- Fix includes to work correctly with dexterity and
+  to include simplejson.
+  [vangheem]
+
+- Change ping intervals to something more sane so it doesn't
+  take so long for your workers to come back online after restart.
+  [vangheem]
 
 
 1.1 - 2011-07-21

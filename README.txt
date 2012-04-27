@@ -54,6 +54,19 @@ the package.
 
 .. _`example buildout configurations`: http://dev.plone.org/plone/browser/plone.app.async/trunk
 
+
+Plone 3
+-------
+
+Use zope.app.keyreference
+
+
+Plone 4
+-------
+
+Use five.intid
+
+
 Credits
 =======
 Code from Enfold's `plone.async.core`_ package has been used for setting up the queues.
