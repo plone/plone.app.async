@@ -58,27 +58,7 @@ def _executeAsUser(context_path, portal_path, uf_path, user_id, func, *args, **k
             if context is None:
                 raise BadRequest(
                     'Context path %s not found' % '/'.join(context_path))
-
-            # Create a request to work with
-            import sys
-            from ZPublisher.HTTPResponse import HTTPResponse
-            from ZPublisher.HTTPRequest import HTTPRequest
-            response = HTTPResponse(stdout=sys.stdout)
-            env = {'SERVER_NAME':'fake_server',
-                   'SERVER_PORT':'80',
-                   'REQUEST_METHOD':'GET'}
-            request = HTTPRequest(sys.stdin, env, response)
-
-            # Set values from original request
-            original_request = kwargs.get('original_request')
-            if original_request:
-                for k,v in original_request.items():
-                    request.set(k, v)
-            context.REQUEST = request
-
             result = func(context, *args, **kwargs)
-
-            del context.REQUEST #Avoid "can't pickle file objects"
             transaction.commit()
         except:
             transaction.abort()
