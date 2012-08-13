@@ -21,6 +21,10 @@ class IAsyncService(interface.Interface):
     def queueJob(func, context, *args, **kwargs):
         """Queue a job."""
 
+    def queueJobWithDelay(begin_by, begin_after, func, context, *args,
+        **kwargs):
+        """Queue a job with a delay. See zc.async for more information"""
+
     def queueSerialJobs(*job_infos):
         """Queue several jobs, to be run serially
 

@@ -38,6 +38,7 @@ setup(name='plone.app.async',
           'collective.testcaselayer',
           'simplejson'
       ],
+      extras_require={'plone4_test': 'five.intid'},
       entry_points={
           'z3c.autoinclude.plugin': 'target=plone',
       },

@@ -1,3 +1,5 @@
+import datetime
+import pytz
 import transaction
 from zope.component import getUtility
 from zc.async.testing import wait_for_result
@@ -182,6 +184,17 @@ class TestSimpleJob(AsyncTestCase):
         transaction.commit()
         # not accessible by anon
         self.assertEqual(wait_for_result(job), 0)
+
+    def test_job_with_delay(self):
+        before = datetime.datetime.now(pytz.UTC)
+        job = self.async.queueJobWithDelay(
+            None, before + datetime.timedelta(seconds=1),
+            searchForDocument, self.folder, self.folder.getId())
+        transaction.commit()
+        wait_for_result(job)
+        after = datetime.datetime.now(pytz.UTC)
+        self.assertTrue((after - before).seconds >= 1)
+
 
         
 def test_suite():

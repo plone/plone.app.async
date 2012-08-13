@@ -30,9 +30,10 @@ def _getAuthenticatedUser():
     return acl_users.getPhysicalPath(), user.getId()
 
 
-def _executeAsUser(context_path, portal_path, uf_path, user_id, func, *args, **kwargs):
+def _executeAsUser(context_path, portal_path, uf_path, user_id, func, *args,
+    **kwargs):
     """Reconstruct environment and execute func."""
-    transaction = Zope2.zpublisher_transactions_manager # Supports isDoomed
+    transaction = Zope2.zpublisher_transactions_manager  # Supports isDoomed
     transaction.begin()
     app = Zope2.app()
     result = None
@@ -99,7 +100,8 @@ class AsyncService(threading.local):
             self._conn.onCloseCallback(self.__init__)
         return self._conn.root()[KEY]
 
-    def queueJobInQueue(self, queue, quota_names, func, context, *args, **kwargs):
+    def queueJobInQueue(self, queue, quota_names, func, context, *args,
+        **kwargs):
         """Queue a job in the specified queue."""
         portal = getUtility(ISiteRoot)
         portal_path = portal.getPhysicalPath()
@@ -117,9 +119,18 @@ class AsyncService(threading.local):
     def queueJob(self, func, context, *args, **kwargs):
         """Queue a job in the default queue."""
         queue = self.getQueues()['']
-        return self.queueJobInQueue(queue, ('default',), func, context, *args, **kwargs)
+        return self.queueJobInQueue(queue, ('default',), func, context, *args,
+            **kwargs)
 
-    def _queueJobsInQueue(self, queue, quota_names, job_infos, serialize=True):
+    def queueJobWithDelay(self, begin_by, begin_after, func, context, *args,
+        **kwargs):
+        queue = self.getQueues()['']
+        jobs = [(func, context, args, kwargs)]
+        return self._queueJobsInQueue(queue, ('default',), jobs, True,
+            begin_by, begin_after)
+
+    def _queueJobsInQueue(self, queue, quota_names, job_infos, serialize=True,
+        begin_by=None, begin_after=None):
         """Queue multiple jobs in the specified queue."""
         portal = getUtility(ISiteRoot)
         portal_path = portal.getPhysicalPath()
@@ -127,8 +138,8 @@ class AsyncService(threading.local):
         scheduled = []
         for (func, context, args, kwargs) in job_infos:
             context_path = context.getPhysicalPath()
-            job = Job(_executeAsUser, context_path, portal_path, uf_path, user_id,
-                      func, *args, **kwargs)
+            job = Job(_executeAsUser, context_path, portal_path, uf_path,
+                user_id, func, *args, **kwargs)
             scheduled.append(job)
         if serialize:
             job = serial(*scheduled)
@@ -136,18 +147,20 @@ class AsyncService(threading.local):
             job = parallel(*scheduled)
         if quota_names:
             job.quota_names = quota_names
-        job = queue.put(job)
+        job = queue.put(job, begin_by=begin_by, begin_after=begin_after)
         job.addCallbacks(success=job_success_callback,
                          failure=job_failure_callback)
         return job
 
     def queueSerialJobsInQueue(self, queue, quota_names, *job_infos):
         """Queue serial jobs in the specified queue."""
-        return self._queueJobsInQueue(queue, quota_names, job_infos, serialize=True)
+        return self._queueJobsInQueue(queue, quota_names, job_infos,
+            serialize=True)
 
     def queueParallelJobsInQueue(self, queue, quota_names, *job_infos):
         """Queue parallel jobs in the specified queue."""
-        return self._queueJobsInQueue(queue, quota_names, job_infos, serialize=False)
+        return self._queueJobsInQueue(queue, quota_names, job_infos,
+            serialize=False)
 
     def queueSerialJobs(self, *job_infos):
         """Queue serial jobs in the default queue."""
