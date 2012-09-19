@@ -4,8 +4,12 @@ Changelog
 1.3 (unreleased)
 ----------------
 
-- Added support for queued tasks.
-  [do3cc]
+- Merge expemimental work on UI & jobs back to master
+  [kiorky]
+- Add plone UI to view jobs 
+  [davisagli]
+- Added support for queued/deferred tasks.
+  [kiork,davisagli,do3cc]
 
 
 1.2 - 2012-04-26
