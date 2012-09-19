@@ -100,57 +100,68 @@ class AsyncService(threading.local):
             self._conn.onCloseCallback(self.__init__)
         return self._conn.root()[KEY]
 
-    def queueJobInQueue(self, queue, quota_names, func, context, *args,
-        **kwargs):
+    def queueJobInQueue(self, queue, quota_names,
+                        func, context, *args, **kwargs):
         """Queue a job in the specified queue."""
-        portal = getUtility(ISiteRoot)
-        portal_path = portal.getPhysicalPath()
-        context_path = context.getPhysicalPath()
-        uf_path, user_id = _getAuthenticatedUser()
-        job = Job(_executeAsUser, context_path, portal_path, uf_path, user_id,
-                  func, *args, **kwargs)
-        if quota_names:
-            job.quota_names = quota_names
-        job = queue.put(job)
-        job.addCallbacks(success=job_success_callback,
-                         failure=job_failure_callback)
-        return job
+        return self.queueJobInQueueWithDelay(
+            None, None,
+            queue, quota_names,
+            func, context, *args, **kwargs)
 
     def queueJob(self, func, context, *args, **kwargs):
         """Queue a job in the default queue."""
-        queue = self.getQueues()['']
-        return self.queueJobInQueue(queue, ('default',), func, context, *args,
-            **kwargs)
+        return self.queueJobInQueue('', ('default',), func, context, *args, **kwargs)
+
+    def queueJobInQueueWithDelay(self,
+                                 begin_by, begin_after,
+                                 queue, quota_names,
+                                 func, context, *args, **kwargs):
+        # can accept both queue and queue_name
+        if isinstance(queue, basestring):
+            queue = self.getQueues()[queue]
+        job = (func, context, args, kwargs)
+        # !!! let empty tuples be handled as 'no-quota' !!!
+        if quota_names is None:
+            quota_names = ('default',)
+        return self._queueJobInQueue(queue, quota_names, job, begin_by, begin_after)
 
     def queueJobWithDelay(self, begin_by, begin_after, func, context, *args,
         **kwargs):
-        queue = self.getQueues()['']
-        jobs = [(func, context, args, kwargs)]
-        return self._queueJobsInQueue(queue, ('default',), jobs, True,
-            begin_by, begin_after)
+        return self.queueJobInQueueWithDelay(
+            begin_by, begin_after, '', ('default',),
+            func, context, *args, **kwargs)
 
-    def _queueJobsInQueue(self, queue, quota_names, job_infos, serialize=True,
-        begin_by=None, begin_after=None):
-        """Queue multiple jobs in the specified queue."""
+    def wrapJob(self, job_info):
         portal = getUtility(ISiteRoot)
         portal_path = portal.getPhysicalPath()
         uf_path, user_id = _getAuthenticatedUser()
-        scheduled = []
-        for (func, context, args, kwargs) in job_infos:
-            context_path = context.getPhysicalPath()
-            job = Job(_executeAsUser, context_path, portal_path, uf_path,
-                user_id, func, *args, **kwargs)
-            scheduled.append(job)
-        if serialize:
-            job = serial(*scheduled)
-        else:
-            job = parallel(*scheduled)
+        func, context, args, kwargs = job_info
+        context_path = context.getPhysicalPath()
+        job = Job(_executeAsUser, context_path, portal_path, uf_path,
+            user_id, func, *args, **kwargs)
+        return job
+
+    def __queueJobInQueue(self, begin_by, begin_after, queue, quota_names, job):
         if quota_names:
             job.quota_names = quota_names
         job = queue.put(job, begin_by=begin_by, begin_after=begin_after)
         job.addCallbacks(success=job_success_callback,
                          failure=job_failure_callback)
         return job
+
+    def _queueJobInQueue(self, queue, quota_names, job_infos, begin_by=None, begin_after=None):
+        """Queue multiple jobs in the specified queue."""
+        job = self.wrapJob(job_infos)
+        return self.__queueJobInQueue(begin_by, begin_after, queue, quota_names, job)
+
+    def _queueJobsInQueue(self, queue, quota_names, job_infos, serialize=True, begin_by=None, begin_after=None):
+        """Queue multiple jobs in the specified queue."""
+        scheduled = [self.wrapJob(job_info) for job_info in job_infos]
+        if serialize:
+            job = serial(*scheduled)
+        else:
+            job = parallel(*scheduled)
+        return self.__queueJobInQueue(begin_by, begin_after, queue, quota_names, job)
 
     def queueSerialJobsInQueue(self, queue, quota_names, *job_infos):
         """Queue serial jobs in the specified queue."""
