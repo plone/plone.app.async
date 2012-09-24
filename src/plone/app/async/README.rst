@@ -12,6 +12,8 @@ Assuming your setup is done correctly, you can start by obtaining the
     >>> async = getUtility(IAsyncService)
     >>> async
     <plone.app.async.service.AsyncService object at ...>
+    >>> folder = layer['test-folder']
+    >>> portal = layer['portal']
 
 You can already get the ``zc.async`` queues::
 
@@ -19,7 +21,8 @@ You can already get the ``zc.async`` queues::
     <zc.async.queue.Queues object at ...>
 
     >>> import zc.async.dispatcher
-    >>> zc.async.dispatcher.get()
+    >>> from plone.app.async.testing import _dispatcher_uuid
+    >>> zc.async.dispatcher.get(_dispatcher_uuid)
     <zc.async.dispatcher.Dispatcher object at ...>
     >>> queue = async.getQueues()['']
     >>> queue
@@ -28,12 +31,11 @@ You can already get the ``zc.async`` queues::
 Let's define a simple function to be executed asynchronously. Note that the
 first argument **must** be a valid Zope object::
 
-    >>> def addNumbers(context, x1, x2):
-    ...     return x1+x2
+    >>> from plone.app.async.tests.funcs import *
 
 and queue it::
 
-    >>> job = async.queueJob(addNumbers, self.folder, 40, 2)
+    >>> job = async.queueJob(addNumbers, folder, 40, 2)
     >>> len(queue)
     1
     >>> job.status
@@ -57,24 +59,16 @@ Batches of jobs
 Let's now try some jobs that create persistent objects. First define
 the tasks to be executed asynchronously::
 
-    >>> def createDocument(context, id, title, description, body):
-    ...     context.invokeFactory('Document', id,
-    ...         title=title, description=description, text=body)
-    ...     return context[id].id
-
 and::
 
     >>> from Products.CMFCore.utils import getToolByName
-    >>> def submitObject(context, id):
-    ...     obj = context[id]
-    ...     wt = getToolByName(context, 'portal_workflow')
-    ...     wt.doActionFor(obj, 'submit')
+
 
 Queue a job that creates a document and another that submits it::
 
-    >>> job = async.queueJob(createDocument, self.folder,
+    >>> job = async.queueJob(createDocument, folder,
     ...     'foo', 'title', 'description', 'body')
-    >>> job2 = async.queueJob(submitObject, self.folder, 'foo')
+    >>> job2 = async.queueJob(submitObject, folder, 'foo')
     >>> transaction.commit()
 
 Because by default the jobs are executed with the default quota set to 1,
@@ -84,8 +78,8 @@ job that submits the document implies that the one that created it has already
 been carried out::
 
     >>> wait_for_result(job2)
-    >>> wt = getToolByName(self.folder, 'portal_workflow')
-    >>> doc = self.folder['foo']
+    >>> wt = getToolByName(folder, 'portal_workflow')
+    >>> doc = folder['foo']
     >>> wt.getInfoFor(doc, 'review_state')
     'pending'
 
@@ -94,16 +88,16 @@ of ``queueSerialJobs``::
 
     >>> from plone.app.async.service import makeJob
     >>> job = async.queueSerialJobs(
-    ...     makeJob(createDocument, self.folder,
+    ...     makeJob(createDocument, folder,
     ...             'bar', 'title', 'description', 'body'),
-    ...     makeJob(submitObject, self.folder, 'bar'))
+    ...     makeJob(submitObject, folder, 'bar'))
     >>> transaction.commit()
     >>> res = wait_for_result(job)
     >>> res[0].result
     'bar'
     >>> res[1].status
     u'completed-status'
-    >>> doc = self.folder['bar']
+    >>> doc = folder['bar']
     >>> wt.getInfoFor(doc, 'review_state')
     'pending'
 
@@ -115,14 +109,14 @@ Security and user permissions
 When a job is queued by some user, it is also executed by the same user, with
 the same roles and permissions. So for instance::
 
-    >>> job = async.queueJob(createDocument, self.portal,
+    >>> job = async.queueJob(createDocument, portal,
     ...     'foo', 'title', 'description', 'body')
     >>> transaction.commit()
 
 will fail as the user is not allowed to create content in the Plone root::
 
     >>> wait_for_result(job)
-    <zc.twist.Failure AccessControl.unauthorized.Unauthorized>
+    <...Unauthorized...
 
 Handling failure and success
 ----------------------------
@@ -130,49 +124,37 @@ Handling failure and success
 If you need to act on the result of a job or handle a failure you can do
 so by adding callbacks. For instance::
 
-    >>> results = []
-    >>> def job_success_callback(result):
-    ...     results.append("Success: %s"%result)
-    >>> job = async.queueJob(addNumbers, self.folder, 40, 2)
+    >>> from plone.app.async.tests import funcs
+    >>> job = async.queueJob(addNumbers, folder, 40, 2)
     >>> c = job.addCallback(job_success_callback)
     >>> transaction.commit()
     >>> r = wait_for_result(job)
-    >>> results
+    >>> funcs.results
     ['Success: 42']
 
 Failures can be handled in the same way::
 
-    >>> results = []
-    >>> def failingJob(context):
-    ...     raise RuntimeError("FooBared")
-    >>> def job_failure_callback(result):
-    ...     results.append(result)
-    >>> job = async.queueJob(failingJob, self.folder)
+    >>> job = async.queueJob(failingJob, folder)
     >>> c = job.addCallbacks(failure=job_failure_callback)
     >>> transaction.commit()
     >>> r = wait_for_result(job)
-    >>> results
-    [<zc.twist.Failure exceptions.RuntimeError>]
+    >>> funcs.results
+    [...RuntimeError...
 
 It is also possible to handle all successful/failed jobs (for instance if you
 want to send an email upon failure) by subscribing to the respective event::
 
-    >>> def successHandler(event):
-    ...     results.append(event.object)
-    >>> def failureHandler(event):
-    ...     exc = event.object
-    ...     results.append("%s: %s" % (exc.type, exc.value))
     >>> from zope.component import provideHandler
     >>> from plone.app.async.interfaces import IJobSuccess, IJobFailure
     >>> provideHandler(successHandler, [IJobSuccess])
     >>> provideHandler(failureHandler, [IJobFailure])
-    >>> results = []
-    >>> job1 = async.queueJob(addNumbers, self.folder, 40, 2)
-    >>> job2 = async.queueJob(failingJob, self.folder)
+    >>> funcs.results = []
+    >>> job1 = async.queueJob(addNumbers, folder, 40, 2)
+    >>> job2 = async.queueJob(failingJob, folder)
     >>> transaction.commit()
     >>> r = wait_for_result(job2)
-    >>> results
-    [42, 'exceptions.RuntimeError: FooBared']
+    >>> funcs.results
+    [42, ...RuntimeError...FooBared...
 
 Let's clean up and unregister the success/failure handlers...::
 
@@ -180,3 +162,5 @@ Let's clean up and unregister the success/failure handlers...::
     >>> gsm = getGlobalSiteManager()
     >>> _ = gsm.unregisterHandler(successHandler, [IJobSuccess])
     >>> _ = gsm.unregisterHandler(failureHandler, [IJobFailure])
+    >>> transaction.commit()
+

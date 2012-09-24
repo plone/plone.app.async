@@ -4,6 +4,7 @@ Changelog
 1.3 (unreleased)
 ----------------
 
+- Switch tests from collective.testcaselayer to plone.app.testing [kiorky]
 - Merge expemimental work on UI & jobs back to master
   [kiorky]
 - Add plone UI to view jobs 

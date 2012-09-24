@@ -100,6 +100,7 @@ class AsyncService(threading.local):
             self._conn.onCloseCallback(self.__init__)
         return self._conn.root()[KEY]
 
+
     def queueJobInQueue(self, queue, quota_names,
                         func, context, *args, **kwargs):
         """Queue a job in the specified queue."""

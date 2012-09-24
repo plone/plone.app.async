@@ -1,41 +1,40 @@
 import doctest
-import re
-from zope.testing import module
-from zope.testing import renormalizing
-from Testing import ZopeTestCase
-from Products.PloneTestCase.setup import PLONE40
-from plone.app.async.tests.base import FunctionalAsyncTestCase
+import unittest2 as unittest
+import os
+import glob
+import logging
+from plone.testing import layered
+from plone.app.async.testing import PLONE_APP_ASYNC_FUNCTIONAL_TESTING
 
-optionflags = (doctest.REPORT_ONLY_FIRST_FAILURE |
-               doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
-
-
-def setUp(test):
-    module.setUp(test, 'plone.app.async.tests.fakemodule')
-
-
-def tearDown(test):
-    module.tearDown(test)
-
-
-if PLONE40:
-    checker = renormalizing.RENormalizing([
-        (re.compile('<zc.twist.Failure AccessControl.unauthorized.Unauthorized>'),
-                    "<zc.twist.Failure <class 'AccessControl.unauthorized.Unauthorized'>>"),
-        (re.compile('<zc.twist.Failure exceptions.RuntimeError>'),
-                    "<zc.twist.Failure <type 'exceptions.RuntimeError'>>"),
-        (re.compile("\[42, 'exceptions.RuntimeError: FooBared'\]"),
-                    """[42, "<type 'exceptions.RuntimeError'>: FooBared"]"""),
-    ])
-else:
-    checker = None
-
+optionflags = (doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
 
 def test_suite():
-    suite = ZopeTestCase.FunctionalDocFileSuite(
-                'README.rst', package='plone.app.async',
-                test_class=FunctionalAsyncTestCase,
-                setUp=setUp, tearDown=tearDown,
-                optionflags=optionflags,
-                checker=checker)
+    """."""
+    logger = logging.getLogger('plone.app.async.tests')
+    cwd = os.path.dirname(__file__)
+    files = []
+    try:
+        files = glob.glob(os.path.join(cwd, '*txt'))
+        files += glob.glob(os.path.join(cwd, '*rst'))
+        files += glob.glob(os.path.join(
+            os.path.dirname(cwd), '*txt'))
+        files += glob.glob(os.path.join(
+            os.path.dirname(cwd), '*rst'))
+    except Exception,e:
+        logger.warn('No doctests for collective.cron')
+    suite = unittest.TestSuite()
+    globs = globals()
+    for s in files:
+        suite.addTests([
+            layered(
+                doctest.DocFileSuite(
+                    s, 
+                    globs = globs,
+                    module_relative=False,
+                    optionflags=optionflags,         
+                ),
+                layer=PLONE_APP_ASYNC_FUNCTIONAL_TESTING
+            ),
+        ])
     return suite
+

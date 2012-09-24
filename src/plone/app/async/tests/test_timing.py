@@ -93,3 +93,4 @@ def test_suite():
     suite = TestSuite()
     suite.addTest(makeSuite(TestTiming))
     return suite
+

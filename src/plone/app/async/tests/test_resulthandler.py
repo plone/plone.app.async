@@ -27,16 +27,16 @@ def failureHandler(event):
 
 class TestResultHandler(AsyncTestCase):
 
-    def afterSetUp(self):
-        super(TestResultHandler, self).afterSetUp()
+    def setUp(self):
         provideHandler(failureHandler, [IJobFailure])
         provideHandler(successHandler, [IJobSuccess])
+        super(TestResultHandler, self).setUp()
 
-    def beforeTearDown(self):
+    def tearDown(self):
         gsm = getGlobalSiteManager()
         gsm.unregisterHandler(failureHandler, [IJobFailure])
         gsm.unregisterHandler(successHandler, [IJobSuccess])
-        super(TestResultHandler, self).beforeTearDown()
+        super(TestResultHandler, self).tearDown()
 
     def test_success(self):
         events[:] = []
