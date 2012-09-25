@@ -1,2 +1,12 @@
 *.egg-info
+b.sh
+parts/
+var/
+.*cfg
+develop-eggs/
+bin/
+eggs/
+*.env
+.cache/*
+*minitage*
 *.pyc
