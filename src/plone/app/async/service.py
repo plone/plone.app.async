@@ -4,7 +4,12 @@ import Zope2
 from zope.component import getUtility
 from zope.interface import implements
 from zope.event import notify
-from zope.app.component.hooks import setSite
+try:
+    # plone < 4.3
+    from zope.app.component.hooks import setSite
+except:
+    from zope.component.hooks import setSite
+
 from zExceptions import BadRequest
 from AccessControl.SecurityManagement import noSecurityManager,\
     newSecurityManager, getSecurityManager
