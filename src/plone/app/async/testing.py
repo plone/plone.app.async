@@ -95,14 +95,16 @@ def cleanUpDispatcher(uuid=None):
     Monkey patching stackDemoStorage to load our async mountpoint
 
 """
+ASYNC_LAYERS = []
+stackDemoStorage_attr = '_old_stackDemoStorage'
 def async_stackDemoStorage(*args, **kwargs):
-    db = zodb._old_stackDemoStorage(*args, **kwargs)
+    db = getattr(zodb, stackDemoStorage_attr)(*args, **kwargs)
     # we patch only the last stacked storage.
-    if db.storage.__name__ in ['AsyncLayer', 'AsyncFunctionalTest']:
+    if db.storage.__name__ in [l.__name__ for l in ASYNC_LAYERS]:
         db = createAsyncDB(db)
     return db
-if not getattr(zodb, '_old_stackDemoStorage', None):
-    zodb._old_stackDemoStorage = zodb.stackDemoStorage
+if not getattr(zodb, stackDemoStorage_attr, None):
+    setattr(zodb, stackDemoStorage_attr, zodb.stackDemoStorage)
     zodb.stackDemoStorage = async_stackDemoStorage
 def createAsyncDB(db):
     async_db = DB(DemoStorage(name='async'), database_name = 'async')
@@ -116,6 +118,18 @@ def createAsyncDB(db):
     setUpDispatcher(multi_db, _dispatcher_uuid)
     transaction.commit()
     return multi_db
+
+def registerAsyncLayers(layer_or_layers):
+    """Third magic is there, you ll need in
+    each plone.app.async layer to register
+    yourself as beeing an async layer
+    See the call at the end of the file
+    """
+    if not isinstance(layer_or_layers, list):
+        layer_or_layers = [layer_or_layers]
+    for l in layer_or_layers:
+        if not l in ASYNC_LAYERS:
+            ASYNC_LAYERS.append(l)
 
 class AsyncLayer(PloneSandboxLayer):
 
@@ -132,8 +146,8 @@ class AsyncLayer(PloneSandboxLayer):
             Be sure not to have any transaction ongoing
             Unless that you ll have::
 
-                ZODB.POSException.StorageTransactionError: Duplicate tpc_begin calls for same transaction
-
+            ZODB.POSException.StorageTransactionError:
+                Duplicate tpc_begin calls for same transaction
         """
         cleanUpDispatcher(_dispatcher_uuid)
         gsm = component.getGlobalSiteManager()
@@ -214,7 +228,7 @@ class IntegrationTesting(LayerMixin, BIntegrationTesting,):
         LayerMixin.testSetUp(self)
 
 
-class AsyncFunctionalTesting(LayerMixin, BFunctionalTesting):
+class FunctionalTesting(LayerMixin, BFunctionalTesting):
 
     def testSetUp(self):
         """Do not mess up here with another stacked
@@ -255,9 +269,21 @@ class AsyncFunctionalTesting(LayerMixin, BFunctionalTesting):
         del self['app']
         del self['request']
 
+AsyncFunctionalTesting = FunctionalTesting # compat
 
 PLONE_APP_ASYNC_FIXTURE             = AsyncLayer()
 PLONE_APP_ASYNC_INTEGRATION_TESTING = IntegrationTesting(name = "PloneAppAsync:Integration")
 PLONE_APP_ASYNC_FUNCTIONAL_TESTING  = AsyncFunctionalTesting( name = "PloneAppAsync:Functional")
 PLONE_APP_ASYNC_SELENIUM_TESTING    = AsyncFunctionalTesting(bases = (SELENIUM_TESTING, PLONE_APP_ASYNC_FUNCTIONAL_TESTING,), name = "PloneAppAsync:Selenium")
 
+"""
+For plone.app.async descendants addons, you ll need to
+also call setUpAsyncStorage with your layers if you
+inherit from async layers
+"""
+registerAsyncLayers(
+    [PLONE_APP_ASYNC_FIXTURE,
+     PLONE_APP_ASYNC_INTEGRATION_TESTING,
+     PLONE_APP_ASYNC_FUNCTIONAL_TESTING,
+     PLONE_APP_ASYNC_SELENIUM_TESTING,]
+)
