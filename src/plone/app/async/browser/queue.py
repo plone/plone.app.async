@@ -20,7 +20,8 @@ local_zone = DateTime().asdatetime().tzinfo
 def get_failure(job):
     if job.status == COMPLETED and isinstance(job.result, Failure):
         return job.result
-    elif job.status not in (ACTIVE, COMPLETED) and job._retry_policy and job._retry_policy.data.get('job_error', 0):
+    elif job.status not in (ACTIVE, COMPLETED) and job._retry_policy \
+            and job._retry_policy.data.get('job_error', 0):
         return job._retry_policy.data['last_job_error']
 
 
@@ -36,7 +37,8 @@ jQuery(function($) {
     $.fn.render = function(data) {
       var rows = ['<tr><th>Job</th><th>Status</th></tr>'];
       $(data).each(function(i, job) {
-        row = ['<tr><td><div><strong>' + escape(job.callable) + '</strong></div>'];
+        row = ['<tr><td><div><strong>' + escape(job.callable) +
+            '</strong></div>'];
         row.push('<div>' + escape(job.args) + '</div></td>');
         row.push('<td>' + job.status);
         if (job.progress)
@@ -48,7 +50,8 @@ jQuery(function($) {
       $('table', this).html(rows.join(''));
       var form = this.closest('form');
       var legend = $('legend', this);
-      $('.formTab span', form).eq($('legend', form).index(legend)).html(legend.html().replace('0', data.length));
+      $('.formTab span', form).eq($('legend', form).
+        index(legend)).html(legend.html().replace('0', data.length));
     };
 
     $.getJSON('jobs.json', function(data) {
@@ -81,7 +84,7 @@ class JobsJSON(BrowserView):
                         yield 'dead', job
                     else:
                         yield 'completed', job
-    
+
     def _filter_jobs(self):
         for job_status, job in self._find_jobs():
             if getattr(job, 'portal_path', None) == self.portal_path:
@@ -90,7 +93,7 @@ class JobsJSON(BrowserView):
     @lazy_property
     def portal_path(self):
         return self.context.getPhysicalPath()
-    
+
     @lazy_property
     def now(self):
         return datetime.now(pytz.UTC)
@@ -128,9 +131,11 @@ class JobsJSON(BrowserView):
                 if job._retry_policy:
                     retries = job._retry_policy.data.get('job_error', 0)
                 if retries:
-                    return 'Retry #%s scheduled for %s' % (retries, self.format_datetime(job.begin_after))
+                    return 'Retry #%s scheduled for %s' % (retries,
+                        self.format_datetime(job.begin_after))
                 else:
-                    return 'Scheduled for %s' % self.format_datetime(job.begin_after)
+                    return 'Scheduled for %s' % self.format_datetime(
+                        job.begin_after)
             else:
                 return 'Queued at %s' % self.format_datetime(job.begin_after)
 
@@ -142,7 +147,9 @@ class JobsJSON(BrowserView):
         if not progress:
             return ''
 
-        return '<div style="width:100px; border: solid 1px #000;"><div style="width:%dpx; background: red;">&nbsp;</div></div>%d%%' % (progress, progress)
+        return """<div style="width:100px; border: solid 1px #000;">
+<div style="width:%dpx; background: red;">&nbsp;</div></div>%d%%""" % (
+            progress, progress)
 
     def format_args(self, job):
         try:
@@ -150,10 +157,12 @@ class JobsJSON(BrowserView):
         except:
             argnames = None
         if argnames is not None:
-            args = ', '.join('%s=%s' % (k, v) for k, v in zip(argnames, job.args))
+            args = ', '.join('%s=%s' % (k, v)
+                                for k, v in zip(argnames, job.args))
         else:
             args = ', '.join(custom_repr(a) for a in job.args)
-        kwargs = ', '.join(k + "=" + custom_repr(v) for k, v in job.kwargs.items())
+        kwargs = ', '.join(k + "=" + custom_repr(v)
+                            for k, v in job.kwargs.items())
         if args and kwargs:
             args += ", " + kwargs
         elif kwargs:
@@ -166,9 +175,10 @@ class JobsJSON(BrowserView):
             return ''
 
         res = '%s: %s' % (failure.type.__name__, failure.getErrorMessage())
-        res += ' <a href="%s/manage-job-error?id=%s">Details</a>' % (self.context.absolute_url(), u64(job._p_oid))
+        res += ' <a href="%s/manage-job-error?id=%s">Details</a>' % (
+            self.context.absolute_url(), u64(job._p_oid))
         return res
-    
+
     def format_datetime(self, dt):
         return dt.astimezone(local_zone).strftime('%I:%M:%S %p, %Y-%m-%d')
 

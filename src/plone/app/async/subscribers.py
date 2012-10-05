@@ -9,7 +9,8 @@ logger = logging.getLogger('plone.app.async')
 def set_ping_intervals(dispatcher, ping_secs, ping_death_secs):
     """Set ping intervals."""
     dispatcher.ping_interval = datetime.timedelta(seconds=ping_secs)
-    dispatcher.ping_death_interval = datetime.timedelta(seconds=ping_death_secs)
+    dispatcher.ping_death_interval = datetime.timedelta(
+        seconds=ping_death_secs)
     logger.info('dispatcher ping intervals configured')
 
 
