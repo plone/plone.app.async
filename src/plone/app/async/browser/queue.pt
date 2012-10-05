@@ -24,7 +24,6 @@
       <fieldset id="queued-jobs">
         <legend>Queued (0)</legend>
         <table class="listing"></table>
-        <a href="http://localhost:8080/Plone/@@queue-job">Add job</a>
       </fieldset>
 
       <fieldset id="active-jobs">

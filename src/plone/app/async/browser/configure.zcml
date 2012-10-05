@@ -25,11 +25,4 @@
     class=".queue.TracebackView"
     />
 
-  <browser:page
-    name="queue-job"
-    for="Products.CMFCore.interfaces.ISiteRoot"
-    permission="plone.app.async.ManageJobQueue"
-    class=".queue.TestJob"
-    />
-
 </configure>

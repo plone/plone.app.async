@@ -180,23 +180,3 @@ class TracebackView(BrowserView):
         job = queue._p_jar.get(p64(int(id)))
         failure = get_failure(job)
         return escape(failure.getTraceback())
-
-
-import time
-from plone.app.async import Job, queue, RetryWithDelay
-import zc.async
-
-def foobar():
-    MAX = 20
-    for i in range(MAX):
-        time.sleep(5)
-        zc.async.local.setLiveAnnotation('progress', i / float(MAX))
-    raise Exception('Oh no!')
-
-
-class TestJob(BrowserView):
-
-    def __call__(self):
-        job = queue(Job(foobar))
-        job.retry_policy_factory = RetryWithDelay()
-        return self.request.response.redirect('http://localhost:8080/Plone/manage-job-queue')
