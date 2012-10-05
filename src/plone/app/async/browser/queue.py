@@ -87,7 +87,9 @@ class JobsJSON(BrowserView):
 
     def _filter_jobs(self):
         for job_status, job in self._find_jobs():
-            if getattr(job, 'portal_path', None) == self.portal_path:
+            job_context = job.args[0]
+            if type(job_context) == tuple and \
+                    job_context[:len(self.portal_path)] == self.portal_path:
                 yield job_status, job
 
     @lazy_property
