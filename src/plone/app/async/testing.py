@@ -176,6 +176,7 @@ class LayerMixin(Layer):
         self['portal'].portal_membership.deleteMembers([PLONE_MANAGER_NAME])
         self.setRoles()
         self.login()
+        transaction.commit()
 
     def testSetUp(self):
         if not self['portal']['acl_users'].getUser(PLONE_MANAGER_NAME):
@@ -193,6 +194,7 @@ class LayerMixin(Layer):
             self['portal'].invokeFactory('Folder', 'test-folder')
         self['test-folder'] = self['folder'] = self['portal']['test-folder']
         self.setRoles(TEST_USER_ROLES)
+        transaction.commit()
 
     def add_user(self, portal, id, username, password, roles=None):
         if not roles: roles = TEST_USER_ROLES[:]
@@ -201,6 +203,7 @@ class LayerMixin(Layer):
         pas.source_users.addUser(id, username, password)
         self.setRoles(roles, id)
         self.logout()
+        transaction.commit()
 
     def setRoles(self, roles=None, id=TEST_USER_ID):
         if roles is None:
@@ -225,7 +228,9 @@ class LayerMixin(Layer):
 class IntegrationTesting(LayerMixin, BIntegrationTesting,):
     def testSetUp(self):
         BIntegrationTesting.testSetUp(self)
+        transaction.commit()
         LayerMixin.testSetUp(self)
+        transaction.commit()
 
 
 class FunctionalTesting(LayerMixin, BFunctionalTesting):
@@ -251,8 +256,11 @@ class FunctionalTesting(LayerMixin, BFunctionalTesting):
         self['app'] = app
         self['request'] = request
         self['portal'] = portal = self['app'][PLONE_SITE_ID]
+        transaction.commit()
         self.setUpEnvironment(portal)
+        transaction.commit()
         LayerMixin.testSetUp(self)
+        transaction.commit()
 
     def testTearDown(self):
         LayerMixin.testTearDown(self)
