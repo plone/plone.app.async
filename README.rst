@@ -7,6 +7,8 @@ Introduction
 Integration package for `zc.async`_ allowing asynchronous operations in
 Plone 3 and 4.
 
+.. contents::
+
 Repository
 =================
 - https://github.com/plone/plone.app.async
