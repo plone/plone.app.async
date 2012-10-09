@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from os.path import join
 
-version = '1.4dev0'
+version = '1.4'
 
 setup(name='plone.app.async',
       version=version,
