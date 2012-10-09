@@ -54,12 +54,10 @@ test::
     42
 
 Batches of jobs
----------------
+----------------
 
 Let's now try some jobs that create persistent objects. First define
 the tasks to be executed asynchronously::
-
-and::
 
     >>> from Products.CMFCore.utils import getToolByName
 
