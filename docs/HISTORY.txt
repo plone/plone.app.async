@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+1.5 (unreleased)
+----------------
+
+- Nothing changed yet.
+
+
 1.4 (2012-10-09)
 ---------------- 
 - fix tests, and helpers mainly for plone.app.async testing layer consumers (collective.cron) [kiorky]
