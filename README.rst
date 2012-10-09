@@ -7,6 +7,10 @@ Introduction
 Integration package for `zc.async`_ allowing asynchronous operations in
 Plone 3 and 4.
 
+Repository
+=================
+- https://github.com/plone/plone.app.async
+
 Installation
 ============
 You will typically run ``plone.app.async`` in a ZEO environment, where you
@@ -52,7 +56,7 @@ There are two important stanzas here:
 For more details please look at the `example buildout configurations`_ included in
 the package.
 
-.. _`example buildout configurations`: http://dev.plone.org/plone/browser/plone.app.async/trunk
+.. _`example buildout configurations`: https://github.com/plone/plone.app.async
 
 
 Plone 3
