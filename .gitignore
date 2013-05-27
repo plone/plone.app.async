@@ -1,4 +1,8 @@
+htmlcov
+sys
+*,cover
 *.egg-info
+.coverage
 b.sh
 parts/
 var/
