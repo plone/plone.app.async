@@ -1,0 +1,12 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="plone.app.async">
+
+  <browser:page
+      name="rnix_test"
+      for="*"
+      permission="zope2.View"
+      class=".test.Test"
+    />
+</configure>
