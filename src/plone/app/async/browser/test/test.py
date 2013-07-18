@@ -20,11 +20,12 @@ from plone.app.async.interfaces import IAsyncService
 def async_create(context):
     # context might be anywhere, need to create content at portal root
     site = getSite()
-    site.invokeFactory('Folder', 'some_id') # <- AttributeError: 'NoneType' object has no attribute 'id'
+    context.invokeFactory('Folder', 'some_id') # <- AttributeError: 'NoneType' object has no attribute 'id'
 
 class Test(BrowserView):
 
     def __call__(self):
         context = self.context
         async = getUtility(IAsyncService)
+        import pdb;pdb.set_trace()  ## Breakpoint ##
         async.queueJob(async_create, context)
