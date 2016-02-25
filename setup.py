@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from os.path import join
 
-version = '1.7.0'
+version = '1.7.0dev0'
 
 setup(name='plone.app.async',
       version=version,
@@ -17,6 +17,11 @@ setup(name='plone.app.async',
           'Operating System :: OS Independent',
           'Programming Language :: Python',
           'Topic :: Software Development :: Libraries :: Python Modules',
+          "Framework :: Plone :: 4.0",
+          "Framework :: Plone :: 4.1",
+          "Framework :: Plone :: 4.2",
+          "Framework :: Plone :: 4.3",
+          "Framework :: Plone :: 5.0"
       ],
       keywords='plone async asynchronous',
       author='Plone Foundation',
