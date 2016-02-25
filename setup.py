@@ -39,6 +39,7 @@ setup(name='plone.app.async',
           'zope.keyreference',
           'rwproperty',
           'simplejson',
+          'zope.minmax'
       ],
       extras_require={'plone4_test': [
         'five.intid',

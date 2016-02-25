@@ -5,23 +5,12 @@ Changelog
 1.7 (unreleased)
 ----------------
 
-- Nothing changed yet.
-
-
-1.6 (2012-10-09)
-----------------
-
-- Nothing changed yet.
-
-
-1.5 (2012-10-09)
-----------------
-
-- Nothing changed yet.
+- Add zope.minmax dependency
+  [vangheem]
 
 
 1.4 (2012-10-09)
----------------- 
+----------------
 - fix tests, and helpers mainly for plone.app.async testing layer consumers (collective.cron) [kiorky]
 - fix rst markup [kiorky]
 
