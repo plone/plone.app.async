@@ -1,48 +1,42 @@
-from Products.Five import zcml
-from zope.interface import Interface, implements
-from zope.component import getUtility
-from zope.formlib import form
-import transaction
-from plone.app.async.utils import wait_for_all_jobs
-from plone.app.form.interfaces import IPlonePageForm
+# -*- coding: utf-8 -*-
 from plone.app.async.interfaces import IAsyncService
 from plone.app.async.tests.base import FunctionalAsyncTestCase
+from plone.app.async.tests.funcs import createDocument
+from plone.app.async.utils import wait_for_all_jobs
+from zope.component import getUtility
+from Products.Five.browser import BrowserView
 
-try:
-    from five.formlib import formbase
-except ImportError:
-    from Products.Five.formlib import formbase
+TESTPAGE = """\
+<html>
+<body>
+    <form action="{url:s}" method="post">
+        <input type="submit" name="apply" value="Apply" />
+    </form>
+</body>
+</html>
+"""
 
 
-def createDocument(context, anid, title, description, body):
-    context.invokeFactory('Document', anid,
-        title=title, description=description, text=body)
-    return context[anid].id
+class TestView(BrowserView):
 
-
-class IFFields(Interface):
-    pass
-
-
-class TestView(formbase.PageForm):
-    """
-    """
-    implements(IPlonePageForm)
-    label = u"Test"
-    form_fields = form.Fields(IFFields)
+    def __call__(self):
+        if self.request.method == 'POST':
+            self.testing()
+            return ''
+        self.request.RESPONSE.setHeader('Content-Type', 'text/html')
+        return TESTPAGE.format(url=self.context.absolute_url() + '/@@testview')
 
     def testing(self):
         async = getUtility(IAsyncService)
         async.queueJob(
-            createDocument, self.context,
-            'anidf', 'atitle', 'adescr', 'abody')
+            createDocument,
+            self.context,
+            'anidf',
+            'atitle',
+            'adescr',
+            'abody'
+        )
 
-    @form.action(u"Apply")
-    def action_submit(self, action, data):
-        """
-        """
-        self.testing()
-        return ''
 
 class TestFunctional(FunctionalAsyncTestCase):
     """This test is here to make sure that the FunctionalAsyncTestCase is
@@ -52,7 +46,7 @@ class TestFunctional(FunctionalAsyncTestCase):
 
     def test_view(self):
         browser = self.getBrowser()
-        browser.open(self.folder.absolute_url()+"/@@testview")
+        browser.open(self.folder.absolute_url() + "/@@testview")
         browser.getControl("Apply").click()
         wait_for_all_jobs()
         self.failUnless('anidf' in self.folder)

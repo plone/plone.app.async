@@ -1,17 +1,21 @@
-import inspect
+# -*- coding: utf-8 -*-
 from DateTime import DateTime
 from datetime import datetime
-from zope.cachedescriptors.property import Lazy as lazy_property
-from zope.component import getUtility
+from plone.app.async.interfaces import IAsyncService
 from Products.Five import BrowserView
-from zc.async.interfaces import ACTIVE, COMPLETED
+from webdav.xmltools import escape
+from zc.async.interfaces import ACTIVE
+from zc.async.interfaces import COMPLETED
 from zc.async.utils import custom_repr
 from zc.twist import Failure
-from plone.app.async.interfaces import IAsyncService
-from webdav.xmltools import escape
-from ZODB.utils import p64, u64
-import simplejson as json
+from ZODB.utils import p64
+from ZODB.utils import u64
+from zope.cachedescriptors.property import Lazy as lazy_property
+from zope.component import getUtility
+
+import inspect
 import pytz
+import simplejson as json
 
 
 local_zone = DateTime().asdatetime().tzinfo
@@ -136,7 +140,7 @@ class JobsJSON(BrowserView):
                     retries = job._retry_policy.data.get('job_error', 0)
                 if retries:
                     return 'Retry #%s scheduled for %s' % (retries,
-                        self.format_datetime(job.begin_after))
+                                                           self.format_datetime(job.begin_after))
                 else:
                     return 'Scheduled for %s' % self.format_datetime(
                         job.begin_after)
@@ -162,11 +166,11 @@ class JobsJSON(BrowserView):
             argnames = None
         if argnames is not None:
             args = ', '.join('%s=%s' % (k, v)
-                                for k, v in zip(argnames, job.args))
+                             for k, v in zip(argnames, job.args))
         else:
             args = ', '.join(custom_repr(a) for a in job.args)
         kwargs = ', '.join(k + "=" + custom_repr(v)
-                            for k, v in job.kwargs.items())
+                           for k, v in job.kwargs.items())
         if args and kwargs:
             args += ", " + kwargs
         elif kwargs:

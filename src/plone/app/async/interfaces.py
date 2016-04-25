@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from zope import interface
 from zope.component.interfaces import IObjectEvent
 
@@ -22,7 +23,7 @@ class IAsyncService(interface.Interface):
         """Queue a job."""
 
     def queueJobWithDelay(begin_by, begin_after, func, context, *args,
-        **kwargs):
+                          **kwargs):
         """Queue a job with a delay. See zc.async for more information"""
 
     def queueSerialJobs(*job_infos):

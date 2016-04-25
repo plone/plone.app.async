@@ -1,7 +1,10 @@
-import logging
-import datetime
-from zope.event import notify
+# -*- coding: utf-8 -*-
 from plone.app.async.interfaces import QueueReady
+from zope.event import notify
+
+import datetime
+import logging
+
 
 logger = logging.getLogger('plone.app.async')
 

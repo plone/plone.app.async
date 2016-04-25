@@ -1,6 +1,8 @@
-import BTrees.OOBTree
+# -*- coding: utf-8 -*-
 from datetime import timedelta
 from zc.async.job import RetryCommonFourTimes
+
+import BTrees.OOBTree
 
 
 class RetryWithDelay(RetryCommonFourTimes):
@@ -14,7 +16,7 @@ class RetryWithDelay(RetryCommonFourTimes):
     max_retries = 8
     job_exceptions = RetryCommonFourTimes.internal_exceptions + (
         ((Exception,), 'job_error', max_retries, 0, 0, 0,),
-        )
+    )
     datacache_key = 'job_error'
 
     def __init__(self, delay=timedelta(minutes=15)):

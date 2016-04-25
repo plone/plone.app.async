@@ -1,24 +1,31 @@
+# -*- coding: utf-8 -*-
+from AccessControl.SecurityManagement import getSecurityManager
+from AccessControl.SecurityManagement import newSecurityManager
+from AccessControl.SecurityManagement import noSecurityManager
+from AccessControl.User import SpecialUser
+from plone.app.async.interfaces import IAsyncDatabase
+from plone.app.async.interfaces import IAsyncService
+from plone.app.async.interfaces import JobFailure
+from plone.app.async.interfaces import JobSuccess
+from Products.CMFCore.interfaces import ISiteRoot
+from zc.async.interfaces import KEY
+from zc.async.job import Job
+from zc.async.job import parallel
+from zc.async.job import serial
+from zExceptions import BadRequest
+from zope.component import getUtility
+from zope.event import notify
+from zope.interface import implements
+
 import threading
 import Zope2
 
-from zope.component import getUtility
-from zope.interface import implements
-from zope.event import notify
+
 try:
     # plone < 4.3
     from zope.app.component.hooks import setSite
 except:
     from zope.component.hooks import setSite
-
-from zExceptions import BadRequest
-from AccessControl.SecurityManagement import noSecurityManager,\
-    newSecurityManager, getSecurityManager
-from AccessControl.User import SpecialUser
-from Products.CMFCore.interfaces import ISiteRoot
-from zc.async.interfaces import KEY
-from zc.async.job import serial, parallel, Job
-from plone.app.async.interfaces import IAsyncDatabase, IAsyncService
-from plone.app.async.interfaces import JobSuccess, JobFailure
 
 
 def makeJob(func, context, *args, **kwargs):
@@ -36,7 +43,7 @@ def _getAuthenticatedUser():
 
 
 def _executeAsUser(context_path, portal_path, uf_path, user_id, func, *args,
-    **kwargs):
+                   **kwargs):
     """Reconstruct environment and execute func."""
     transaction = Zope2.zpublisher_transactions_manager  # Supports isDoomed
     transaction.begin()
@@ -133,7 +140,7 @@ class AsyncService(threading.local):
                                      begin_by, begin_after)
 
     def queueJobWithDelay(self, begin_by, begin_after, func, context, *args,
-        **kwargs):
+                          **kwargs):
         return self.queueJobInQueueWithDelay(
             begin_by, begin_after, '', ('default',),
             func, context, *args, **kwargs)
@@ -145,7 +152,7 @@ class AsyncService(threading.local):
         func, context, args, kwargs = job_info
         context_path = context.getPhysicalPath()
         job = Job(_executeAsUser, context_path, portal_path, uf_path,
-            user_id, func, *args, **kwargs)
+                  user_id, func, *args, **kwargs)
         return job
 
     def __queueJobInQueue(self, begin_by, begin_after, queue,
@@ -178,12 +185,12 @@ class AsyncService(threading.local):
     def queueSerialJobsInQueue(self, queue, quota_names, *job_infos):
         """Queue serial jobs in the specified queue."""
         return self._queueJobsInQueue(queue, quota_names, job_infos,
-            serialize=True)
+                                      serialize=True)
 
     def queueParallelJobsInQueue(self, queue, quota_names, *job_infos):
         """Queue parallel jobs in the specified queue."""
         return self._queueJobsInQueue(queue, quota_names, job_infos,
-            serialize=False)
+                                      serialize=False)
 
     def queueSerialJobs(self, *job_infos):
         """Queue serial jobs in the default queue."""

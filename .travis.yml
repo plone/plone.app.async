@@ -1,0 +1,28 @@
+language: python
+sudo: false
+cache:
+  pip: true
+  directories:
+    - $HOME/buildout-cache
+python:
+  - 2.7
+env:
+  - PLONE_VERSION=5.x
+  - PLONE_VERSION=4.3.x
+before_install:
+  - mkdir -p $HOME/buildout-cache/{eggs,downloads}
+  - mkdir $HOME/.buildout
+  - echo "[buildout]" > $HOME/.buildout/default.cfg
+  - echo "download-cache = $HOME/buildout-cache/downloads" >> $HOME/.buildout/default.cfg
+  - echo "eggs-directory = $HOME/buildout-cache/eggs" >> $HOME/.buildout/default.cfg
+install:
+  - sed -ie "s#travis-5.x.cfg#travis-$PLONE_VERSION.cfg#" travis.cfg
+  - pip install -r requirements.txt
+  - buildout -N -t 6 -Nc travis.cfg
+script:
+  - bin/code-analysis
+  - bin/test
+after_success:
+  - bin/createcoverage
+  - pip install coveralls
+  - coveralls
