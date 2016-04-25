@@ -2,8 +2,8 @@
 from plone.app.async.interfaces import IAsyncService
 from plone.app.async.service import makeJob
 from plone.app.async.tests.base import AsyncTestCase
+from plone.app.testing import TEST_USER_ID
 from Products.CMFCore.utils import getToolByName
-from Products.PloneTestCase.PloneTestCase import default_user
 from zc.async.testing import wait_for_result
 from zope.component import getUtility
 
@@ -56,8 +56,7 @@ class TestSimpleJob(AsyncTestCase):
 
     def setUp(self):
         AsyncTestCase.setUp(self)
-        self.login()
-        self.setRoles(['Manager'])
+        self.layer.login_as_manager()
 
     def test_add_job(self):
         """Tests adding a computational job and getting the result.
@@ -73,8 +72,10 @@ class TestSimpleJob(AsyncTestCase):
     def test_add_persistent(self):
         """Adding a job that creates persistent objects.
         """
-        job = self.async.queueJob(createDocument,
-                                  self.folder, 'anide', 'atitle', 'adescr', 'abody')
+        job = self.async.queueJob(
+            createDocument,
+            self.folder, 'anide', 'atitle', 'adescr', 'abody'
+        )
         transaction.commit()
         self.assertEqual(job.status, u'pending-status')
         wait_for_result(job)
@@ -82,7 +83,7 @@ class TestSimpleJob(AsyncTestCase):
         self.assertEqual(job.result, 'anide')
         self.failUnless('anide' in self.folder.objectIds())
         document = self.folder['anide']
-        self.assertEqual(document.Creator(), default_user)
+        self.assertEqual(document.Creator(), TEST_USER_ID)
 
     def test_serial_jobs(self):
         """Queue two jobs the one after the other.
@@ -102,8 +103,10 @@ class TestSimpleJob(AsyncTestCase):
     def test_serial_jobs2(self):
         """Queue a job that queues another job.
         """
-        job = self.async.queueJob(createDocumentAndPublish,
-                                  self.folder, 'anid23', 'atitle', 'adescr', 'abody')
+        job = self.async.queueJob(
+            createDocumentAndPublish,
+            self.folder, 'anid23', 'atitle', 'adescr', 'abody'
+        )
         transaction.commit()
         wait_for_result(job)
         self.assertEqual(job.result, 'workflow_change')
@@ -189,7 +192,7 @@ class TestSimpleJob(AsyncTestCase):
         self.assertEqual(wait_for_result(job), 1)
 
         # Let's try as anoymous
-        self.logout()
+        self.layer.logout()
 
         job = self.async.queueJob(searchForDocument, doc, doc.getId())
         transaction.commit()

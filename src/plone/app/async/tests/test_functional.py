@@ -1,52 +1,41 @@
 # -*- coding: utf-8 -*-
 from plone.app.async.interfaces import IAsyncService
 from plone.app.async.tests.base import FunctionalAsyncTestCase
+from plone.app.async.tests.funcs import createDocument
 from plone.app.async.utils import wait_for_all_jobs
-from plone.app.form.interfaces import IPlonePageForm
-from Products.Five import zcml
 from zope.component import getUtility
-from zope.formlib import form
-from zope.interface import implements
-from zope.interface import Interface
+from Products.Five.browser import BrowserView
 
-import transaction
-
-
-try:
-    from five.formlib import formbase
-except ImportError:
-    from Products.Five.formlib import formbase
-
-
-def createDocument(context, anid, title, description, body):
-    context.invokeFactory('Document', anid,
-                          title=title, description=description, text=body)
-    return context[anid].id
+TESTPAGE = """\
+<html>
+<body>
+    <form action="{url:s}" method="post">
+        <input type="submit" name="apply" value="Apply" />
+    </form>
+</body>
+</html>
+"""
 
 
-class IFFields(Interface):
-    pass
+class TestView(BrowserView):
 
-
-class TestView(formbase.PageForm):
-    """
-    """
-    implements(IPlonePageForm)
-    label = u"Test"
-    form_fields = form.Fields(IFFields)
+    def __call__(self):
+        if self.request.method == 'POST':
+            self.testing()
+            return ''
+        self.request.RESPONSE.setHeader('Content-Type', 'text/html')
+        return TESTPAGE.format(url=self.context.absolute_url() + '/@@testview')
 
     def testing(self):
         async = getUtility(IAsyncService)
         async.queueJob(
-            createDocument, self.context,
-            'anidf', 'atitle', 'adescr', 'abody')
-
-    @form.action(u"Apply")
-    def action_submit(self, action, data):
-        """
-        """
-        self.testing()
-        return ''
+            createDocument,
+            self.context,
+            'anidf',
+            'atitle',
+            'adescr',
+            'abody'
+        )
 
 
 class TestFunctional(FunctionalAsyncTestCase):

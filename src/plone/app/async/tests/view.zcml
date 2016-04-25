@@ -1,11 +1,10 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser">
-  <include package="Products.Five" file="meta.zcml"/>
   <browser:page
+      class=".test_functional.TestView"
       for="*"
       name="testview"
-      class="plone.app.async.tests.test_functional.TestView"
       permission="zope2.View"
-    />
+  />
 </configure>

@@ -3,19 +3,18 @@ from plone.app.async.interfaces import IAsyncDatabase
 from plone.app.async.interfaces import IQueueReady
 from plone.app.async.subscribers import configureQueue
 from plone.app.async.subscribers import notifyQueueReady
+from plone.app.contenttypes.testing import PLONE_APP_CONTENTTYPES_FIXTURE
 from plone.app.testing import FunctionalTesting as BFunctionalTesting
 from plone.app.testing import IntegrationTesting as BIntegrationTesting
+from plone.app.testing import logout
+from plone.app.testing import login
 from plone.app.testing import PLONE_SITE_ID
-from plone.app.testing import PloneFixture
 from plone.app.testing import PloneSandboxLayer
 from plone.app.testing import setRoles
-from plone.app.testing import SITE_OWNER_NAME
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import TEST_USER_NAME
 from plone.app.testing import TEST_USER_ROLES
-from plone.app.testing.helpers import login
-from plone.app.testing.helpers import logout
-from plone.app.testing.selenium_layers import SELENIUM_FUNCTIONAL_TESTING as SELENIUM_TESTING
+from plone.app.testing.selenium_layers import SELENIUM_FUNCTIONAL_TESTING as SELENIUM_TESTING  # noqa
 from plone.testing import Layer
 from plone.testing import z2
 from plone.testing import zodb
@@ -28,6 +27,7 @@ from zc.async.testing import tear_down_dispatcher
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
 from zope import component
+from zope.globalrequest import setRequest
 from zope.app.appsetup.interfaces import DatabaseOpened
 
 import time
@@ -40,37 +40,6 @@ PLONE_MANAGER_ID = 'plonemanager'
 PLONE_MANAGER_PASSWORD = 'plonemanager'
 
 _dispatcher_uuid = uuid.uuid1()
-
-
-try:
-    from zope.component.hooks import getSite, setSite
-except ImportError:
-    from zope.app.component.hooks import getSite, setSite
-
-try:
-    from Zope2.App import zcml
-except ImportError:
-    from Products.Five import zcml
-
-
-def loadZCMLFile(config, package=None, execute=True):
-    # Unset current site for Zope 2.13
-    saved = getSite()
-    setSite(None)
-    try:
-        zcml.load_config(config, package, execute)
-    finally:
-        setSite(saved)
-
-
-def loadZCMLString(string):
-    # Unset current site for Zope 2.13
-    saved = getSite()
-    setSite(None)
-    try:
-        zcml.load_string(string)
-    finally:
-        setSite(saved)
 
 
 def setUpQueue(db):
@@ -106,6 +75,7 @@ def async_stackDemoStorage(*args, **kwargs):
     if db.storage.__name__ in [l.__name__ for l in ASYNC_LAYERS]:
         db = createAsyncDB(db)
     return db
+
 if not getattr(zodb, stackDemoStorage_attr, None):
     setattr(zodb, stackDemoStorage_attr, zodb.stackDemoStorage)
     zodb.stackDemoStorage = async_stackDemoStorage
@@ -113,8 +83,10 @@ if not getattr(zodb, stackDemoStorage_attr, None):
 
 def createAsyncDB(db):
     async_db = DB(DemoStorage(name='async'), database_name='async')
-    multi_db = DB(DemoStorage('AsyncLayerS', base=db.storage),
-                  databases={'async': async_db, })
+    multi_db = DB(
+        DemoStorage('AsyncLayerS', base=db.storage),
+        databases={'async': async_db, }
+    )
     component.provideUtility(async_db, IAsyncDatabase)
     component.provideHandler(agent_installer, [IDispatcherActivated])
     component.provideHandler(notifyQueueReady, [IDispatcherActivated])
@@ -133,20 +105,24 @@ def registerAsyncLayers(layer_or_layers):
     """
     if not isinstance(layer_or_layers, list):
         layer_or_layers = [layer_or_layers]
-    for l in layer_or_layers:
-        if not l in ASYNC_LAYERS:
-            ASYNC_LAYERS.append(l)
+    for ly in layer_or_layers:
+        if ly not in ASYNC_LAYERS:
+            ASYNC_LAYERS.append(ly)
 
 
 class AsyncLayer(PloneSandboxLayer):
 
+    defaultBases = (
+        PLONE_APP_CONTENTTYPES_FIXTURE,
+    )
+
     def setUpZope(self, app, configurationContext):
-        #self._stuff = Zope2.bobo_application._stuff
+        # self._stuff = Zope2.bobo_application._stuff
         z2.installProduct(app, 'Products.PythonScripts')
         import plone.app.async
         self.loadZCML('configure.zcml', package=plone.app.async)
         import plone.app.async.tests
-        zcml.load_config('view.zcml', plone.app.async.tests)
+        self.loadZCML('view.zcml', package=plone.app.async.tests)
 
     def tearDown(self):
         """ Second magical thing to remember in this layer:
@@ -166,73 +142,54 @@ class AsyncLayer(PloneSandboxLayer):
         transaction.commit()
         PloneSandboxLayer.tearDown(self)
 
-    def setUpPloneSite(self, portal):
-        # Plone stuff. Workflows, portal content. Members folder, etc.
-        self.applyProfile(portal, 'Products.CMFPlone:plone')
-        self.applyProfile(portal, 'Products.CMFPlone:plone-content')
-
-# compat !
-AsyncSandbox = AsyncLayer
-
 
 class LayerMixin(Layer):
-    defaultBases = (AsyncLayer(),)
+    defaultBases = (
+        AsyncLayer(),
+    )
+
+    def testSetUp(self):
+        self.login_as_manager()
+        pas = self['portal']['acl_users']
+        if not pas.getUser(PLONE_MANAGER_NAME):
+            pas.source_users.addUser(
+                PLONE_MANAGER_ID,
+                PLONE_MANAGER_NAME,
+                PLONE_MANAGER_PASSWORD
+            )
+            setRoles(
+                self['portal'],
+                PLONE_MANAGER_ID, ['Manager'] + TEST_USER_ROLES
+            )
+
+        if 'test-folder' not in self['portal'].objectIds():
+            self['portal'].invokeFactory('Folder', 'test-folder')
+        self['test-folder'] = self['folder'] = self['portal']['test-folder']
+        self.logout_as_manager()
+        transaction.commit()
 
     def testTearDown(self):
-        self.loginAsPortalOwner()
+        self.login_as_manager()
         if 'test-folder' in self['portal'].objectIds():
             self['portal'].manage_delObjects('test-folder')
         self['portal'].portal_membership.deleteMembers([PLONE_MANAGER_NAME])
-        self.setRoles()
-        self.login()
+        self.logout_as_manager()
         transaction.commit()
 
-    def testSetUp(self):
-        if not self['portal']['acl_users'].getUser(PLONE_MANAGER_NAME):
-            self.loginAsPortalOwner()
-            self.add_user(
-                self['portal'],
-                PLONE_MANAGER_ID,
-                PLONE_MANAGER_NAME,
-                PLONE_MANAGER_PASSWORD,
-                ['Manager'] + TEST_USER_ROLES)
-            self.logout()
-        self.login(TEST_USER_NAME)
-        self.setRoles(['Manager'])
-        if not 'test-folder' in self['portal'].objectIds():
-            self['portal'].invokeFactory('Folder', 'test-folder')
-        self['test-folder'] = self['folder'] = self['portal']['test-folder']
-        self.setRoles(TEST_USER_ROLES)
-        transaction.commit()
+    def login_as_manager(self):
+        login(self['portal'], TEST_USER_NAME)
+        setRoles(self['portal'], TEST_USER_ID, ['Manager'])
 
-    def add_user(self, portal, id, username, password, roles=None):
-        if not roles:
-            roles = TEST_USER_ROLES[:]
-        self.loginAsPortalOwner()
-        pas = portal['acl_users']
-        pas.source_users.addUser(id, username, password)
-        self.setRoles(roles, id)
-        self.logout()
-        transaction.commit()
+    def logout_as_manager(self):
+        setRoles(self['portal'], TEST_USER_ID, TEST_USER_ROLES)
+        logout()
 
-    def setRoles(self, roles=None, id=TEST_USER_ID):
-        if roles is None:
-            roles = TEST_USER_ROLES
-        setRoles(self['portal'], id, roles)
-
-    def loginAsPortalOwner(self):
-        self.login(SITE_OWNER_NAME)
+    def login(self):
+        login(self['portal'], TEST_USER_NAME)
+        setRoles(self['portal'], TEST_USER_ID, TEST_USER_ROLES)
 
     def logout(self):
         logout()
-
-    def login(self, id=None):
-        if not id:
-            id = TEST_USER_NAME
-        try:
-            z2.login(self['app']['acl_users'], id)
-        except:
-            z2.login(self['portal']['acl_users'], id)
 
 
 class IntegrationTesting(LayerMixin, BIntegrationTesting,):
@@ -255,15 +212,12 @@ class FunctionalTesting(LayerMixin, BFunctionalTesting):
             'SERVER_PORT': str(self['port']),
         }
         app = z2.addRequestContainer(
-            Zope2.app(), environ=environ)
+            Zope2.app(),
+            environ=environ
+        )
         request = app.REQUEST
         request['PARENTS'] = [app]
-        # Make sure we have a zope.globalrequest request
-        try:
-            from zope.globalrequest import setRequest
-            setRequest(request)
-        except ImportError:
-            pass
+        setRequest(request)
         self['app'] = app
         self['request'] = request
         self['portal'] = portal = self['app'][PLONE_SITE_ID]
@@ -276,11 +230,8 @@ class FunctionalTesting(LayerMixin, BFunctionalTesting):
     def testTearDown(self):
         LayerMixin.testTearDown(self)
         # Make sure we have a zope.globalrequest request
-        try:
-            from zope.globalrequest import setRequest
-            setRequest(None)
-        except ImportError:
-            pass
+        from zope.globalrequest import setRequest
+        setRequest(None)
         # Close the database connection and the request
         app = self['app']
         app.REQUEST.close()
@@ -295,8 +246,10 @@ PLONE_APP_ASYNC_INTEGRATION_TESTING = IntegrationTesting(
     name="PloneAppAsync:Integration")
 PLONE_APP_ASYNC_FUNCTIONAL_TESTING = AsyncFunctionalTesting(
     name="PloneAppAsync:Functional")
-PLONE_APP_ASYNC_SELENIUM_TESTING = AsyncFunctionalTesting(bases=(
-    SELENIUM_TESTING, PLONE_APP_ASYNC_FUNCTIONAL_TESTING,), name="PloneAppAsync:Selenium")
+PLONE_APP_ASYNC_SELENIUM_TESTING = AsyncFunctionalTesting(
+    bases=(SELENIUM_TESTING, PLONE_APP_ASYNC_FUNCTIONAL_TESTING, ),
+    name="PloneAppAsync:Selenium"
+)
 
 """
 For plone.app.async descendants addons, you ll need to

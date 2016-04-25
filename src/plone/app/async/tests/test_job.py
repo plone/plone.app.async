@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from plone.app.async.tests.base import AsyncTestCase
-from Products.PloneTestCase.PloneTestCase import default_user
+from plone.app.testing import TEST_USER_ID
 from zc.async.testing import wait_for_result
 
 import time
@@ -45,6 +45,7 @@ class TestJob(AsyncTestCase):
         job = queue(Job(addNumbers, 40, 2))
         transaction.commit()
         self.assertEqual(job.status, u'pending-status')
+
         wait_for_result(job)
         self.assertEqual(job.status, u'completed-status')
         self.assertEqual(job.result, 42)
@@ -53,17 +54,27 @@ class TestJob(AsyncTestCase):
         """Adding a job that creates persistent objects.
         """
         from plone.app.async import Job, queue
-        self.setRoles(['Manager'])
-        job = queue(Job(self.folder.invokeFactory, 'Document', 'anid',
-                        title='atitle', description='adescr', text='abody'))
+        self.layer.login_as_manager()
+        job = queue(
+            Job(
+                self.folder.invokeFactory,
+                'Document',
+                'anid',
+                title='atitle',
+                description='adescr',
+                text='abody'
+            )
+        )
         transaction.commit()
         self.assertEqual(job.status, u'pending-status')
+
         wait_for_result(job)
         self.assertEqual(job.status, u'completed-status')
         self.assertEqual(job.result, 'anid')
         self.failUnless('anid' in self.folder.objectIds())
+
         document = self.folder['anid']
-        self.assertEqual(document.Creator(), default_user)
+        self.assertEqual(document.Creator(), TEST_USER_ID)
 
     def test_retry(self):
         """A job that causes a conflict while committing should be retried."""

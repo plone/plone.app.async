@@ -4,7 +4,6 @@
     i18n_domain="plone.app.async">
 
   <include package="five.intid" />
-  <include package=".browser" />
 
   <!-- zc.async -->
   <include package="zc.async" />
@@ -19,5 +18,6 @@
     title="plone.app.async: Manage job queue"
     />
 
+  <include package=".browser" />
 
 </configure>

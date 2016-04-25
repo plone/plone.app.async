@@ -27,10 +27,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        "Framework :: Plone :: 4.0",
-        "Framework :: Plone :: 4.1",
-        "Framework :: Plone :: 4.2",
-        "Framework :: Plone :: 4.3",
         "Framework :: Plone :: 5.0"
     ],
     keywords='plone async asynchronous',
@@ -46,12 +42,10 @@ setup(
     platforms='Any',
     zip_safe=False,
     install_requires=[
-        'five.intid >= 1.0.3',
+        'Plone',
         'rwproperty',
         'setuptools',
-        'simplejson',
-        'zc.async',
-        'zc.monitor',
+        'zc.async[monitor]',
         'zc.z3monitor',
         'zope.keyreference',
         'zope.minmax'
@@ -59,6 +53,7 @@ setup(
     extras_require={
         'test': [
             'plone.app.testing',
+            'plone.app.contenttypes[test]'
         ]
     },
     entry_points={

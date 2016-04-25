@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-from plone.app.async.tests.base import AsyncTestCase
-from plone.app.async.utils import wait_for_all_jobs
 from Products.CMFCore.utils import getToolByName
-from zc.async.testing import wait_for_result
-
-import time
-import transaction
 
 
 def addNumbers(context, x1, x2):

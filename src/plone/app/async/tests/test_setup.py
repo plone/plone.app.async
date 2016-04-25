@@ -2,14 +2,11 @@
 from plone.app.async.interfaces import IAsyncDatabase
 from plone.app.async.testing import _dispatcher_uuid
 from plone.app.async.tests.base import AsyncTestCase
-from Products.PloneTestCase import ptc
 from zc.async import dispatcher
 from zc.async.testing import wait_for_result
-from zope.component import getUtility
 from zope.component import queryUtility
 
 import transaction
-import unittest2 as unittest
 
 
 def dbUsed(context):

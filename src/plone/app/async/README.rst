@@ -7,6 +7,7 @@ Basic use
 Assuming your setup is done correctly, you can start by obtaining the
 ``AsyncService`` utility::
 
+    >>> layer.login()
     >>> from zope.component import getUtility
     >>> from plone.app.async.interfaces import IAsyncService
     >>> async = getUtility(IAsyncService)
@@ -66,13 +67,14 @@ Queue a job that creates a document and another that submits it::
 
     >>> job = async.queueJob(createDocument, folder,
     ...     'foo', 'title', 'description', 'body')
+
     >>> job2 = async.queueJob(submitObject, folder, 'foo')
     >>> transaction.commit()
 
 Because by default the jobs are executed with the default quota set to 1,
 (i.e. only one job can be executed at a time), jobs are executed serially and
 according to the order by which they were submitted. Hence, waiting for the
-job that submits the document implies that the one that created it has already 
+job that submits the document implies that the one that created it has already
 been carried out::
 
     >>> wait_for_result(job2)
