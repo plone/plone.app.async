@@ -8,7 +8,6 @@ from Products.CMFCore.utils import getToolByName
 from zope.site.hooks import getSite
 from zope.site.hooks import setSite
 
-import rwproperty
 import threading
 import types
 import zc.async.job
@@ -37,9 +36,12 @@ class Job(zc.async.job.Job):
             return getattr(callable_root, self._callable_name)
         return super(Job, self).callable
 
-    @rwproperty.setproperty
+    @callable.setter
     def callable(self, value):
-        if isinstance(value, types.MethodType) and ITraversable.providedBy(value.im_self):
+        if (
+            isinstance(value, types.MethodType) and
+            ITraversable.providedBy(value.im_self)
+        ):
             self._callable_path = value.im_self.getPhysicalPath()
             self._callable_name = value.__name__
         else:
@@ -53,7 +55,7 @@ class Job(zc.async.job.Job):
 
         user = getSecurityManager().getUser()
         if isinstance(user, SpecialUser):
-            self.uf_path, user_id = (), None
+            self.uf_path, self.user_id = (), None
         else:
             self.uf_path = user.aq_parent.getPhysicalPath()
             self.user_id = user.getId()

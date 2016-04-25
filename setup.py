@@ -43,7 +43,6 @@ setup(
     zip_safe=False,
     install_requires=[
         'Plone',
-        'rwproperty',
         'setuptools',
         'zc.async[monitor]',
         'zc.z3monitor',
