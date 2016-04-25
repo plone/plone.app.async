@@ -1,19 +1,20 @@
-import unittest2 as unittest
-from zope.component import getUtility
-from plone.app.testing import setRoles
-from plone.app.async.testing import (
-    PLONE_APP_ASYNC_FIXTURE,
-    PLONE_APP_ASYNC_INTEGRATION_TESTING,
-    PLONE_APP_ASYNC_FUNCTIONAL_TESTING,
-    PLONE_APP_ASYNC_SELENIUM_TESTING,
-    TEST_USER_ID,
-    TEST_USER_NAME,
-    TEST_USER_ROLES,
-    PLONE_MANAGER_NAME,
-    PLONE_MANAGER_PASSWORD,
-)
+# -*- coding: utf-8 -*-
 from plone.app.async.interfaces import IAsyncService
+from plone.app.async.testing import PLONE_APP_ASYNC_FIXTURE
+from plone.app.async.testing import PLONE_APP_ASYNC_FUNCTIONAL_TESTING
+from plone.app.async.testing import PLONE_APP_ASYNC_INTEGRATION_TESTING
+from plone.app.async.testing import PLONE_APP_ASYNC_SELENIUM_TESTING
+from plone.app.async.testing import PLONE_MANAGER_NAME
+from plone.app.async.testing import PLONE_MANAGER_PASSWORD
+from plone.app.async.testing import TEST_USER_ID
+from plone.app.async.testing import TEST_USER_NAME
+from plone.app.async.testing import TEST_USER_ROLES
+from plone.app.testing import setRoles
 from plone.testing.z2 import Browser
+from zope.component import getUtility
+
+import unittest2 as unittest
+
 
 class AsyncTestCase(unittest.TestCase):
     """We use this base class for all the tests in this package.

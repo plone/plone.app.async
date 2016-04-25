@@ -1,12 +1,16 @@
-from Products.Five import zcml
-from zope.interface import Interface, implements
-from zope.component import getUtility
-from zope.formlib import form
-import transaction
-from plone.app.async.utils import wait_for_all_jobs
-from plone.app.form.interfaces import IPlonePageForm
+# -*- coding: utf-8 -*-
 from plone.app.async.interfaces import IAsyncService
 from plone.app.async.tests.base import FunctionalAsyncTestCase
+from plone.app.async.utils import wait_for_all_jobs
+from plone.app.form.interfaces import IPlonePageForm
+from Products.Five import zcml
+from zope.component import getUtility
+from zope.formlib import form
+from zope.interface import implements
+from zope.interface import Interface
+
+import transaction
+
 
 try:
     from five.formlib import formbase

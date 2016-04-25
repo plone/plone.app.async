@@ -1,16 +1,21 @@
-import os
-import logging
-import Zope2
-from ZODB.interfaces import IDatabase
-from Zope2.App import startup
-from App.config import getConfiguration
+# -*- coding: utf-8 -*-
 from AccessControl.SecurityManagement import noSecurityManager
-from zope import interface, component
-from zope.app.appsetup.interfaces import DatabaseOpened
-import zc.monitor
-import zc.async.dispatcher
+from App.config import getConfiguration
+from plone.app.async.interfaces import IAsyncDatabase
+from plone.app.async.interfaces import IInitAsync
 from zc.async import subscribers
-from plone.app.async.interfaces import IInitAsync, IAsyncDatabase
+from ZODB.interfaces import IDatabase
+from zope import component
+from zope import interface
+from Zope2.App import startup
+from zope.app.appsetup.interfaces import DatabaseOpened
+
+import logging
+import os
+import zc.async.dispatcher
+import zc.monitor
+import Zope2
+
 
 logger = logging.getLogger('plone.app.async')
 

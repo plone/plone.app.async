@@ -1,38 +1,39 @@
+# -*- coding: utf-8 -*-
+from plone.app.async.interfaces import IAsyncDatabase
+from plone.app.async.interfaces import IQueueReady
+from plone.app.async.subscribers import configureQueue
+from plone.app.async.subscribers import notifyQueueReady
+from plone.app.testing import FunctionalTesting as BFunctionalTesting
+from plone.app.testing import IntegrationTesting as BIntegrationTesting
+from plone.app.testing import PLONE_SITE_ID
+from plone.app.testing import PloneFixture
+from plone.app.testing import PloneSandboxLayer
+from plone.app.testing import setRoles
+from plone.app.testing import SITE_OWNER_NAME
+from plone.app.testing import TEST_USER_ID
+from plone.app.testing import TEST_USER_NAME
+from plone.app.testing import TEST_USER_ROLES
+from plone.app.testing.helpers import login
+from plone.app.testing.helpers import logout
+from plone.app.testing.selenium_layers import SELENIUM_FUNCTIONAL_TESTING as SELENIUM_TESTING
+from plone.testing import Layer
+from plone.testing import z2
+from plone.testing import zodb
+from zc.async import dispatcher
+from zc.async.interfaces import IDispatcherActivated
+from zc.async.subscribers import agent_installer
+from zc.async.subscribers import multidb_queue_installer
+from zc.async.subscribers import ThreadedDispatcherInstaller
+from zc.async.testing import tear_down_dispatcher
+from ZODB import DB
+from ZODB.DemoStorage import DemoStorage
+from zope import component
+from zope.app.appsetup.interfaces import DatabaseOpened
+
 import time
 import transaction
 import uuid
-from zope import component
-from zope.app.appsetup.interfaces import DatabaseOpened
-from ZODB import DB
-from ZODB.DemoStorage import DemoStorage
-from zc.async import dispatcher
-from zc.async.subscribers import multidb_queue_installer
-from zc.async.subscribers import ThreadedDispatcherInstaller
-from zc.async.subscribers import agent_installer
-from zc.async.interfaces import IDispatcherActivated
-from zc.async.testing import tear_down_dispatcher
-from plone.app.async.interfaces import IAsyncDatabase, IQueueReady
-from plone.app.async.subscribers import notifyQueueReady, configureQueue
-from plone.testing import z2
-from plone.testing import Layer
-from plone.testing import zodb
-from plone.app.testing import (
-    PloneFixture,
-    PloneSandboxLayer,
-    IntegrationTesting as BIntegrationTesting,
-    FunctionalTesting as BFunctionalTesting,
-    PLONE_SITE_ID,
-    TEST_USER_NAME,
-    TEST_USER_ID,
-    TEST_USER_ROLES,
-    SITE_OWNER_NAME,
-)
-from plone.app.testing import setRoles
-from plone.app.testing.selenium_layers import SELENIUM_FUNCTIONAL_TESTING as SELENIUM_TESTING
-from plone.app.testing.helpers import (
-    login,
-    logout,
-)
+
 
 PLONE_MANAGER_NAME = 'Plone_manager'
 PLONE_MANAGER_ID = 'plonemanager'

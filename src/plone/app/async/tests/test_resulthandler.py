@@ -1,9 +1,13 @@
-import transaction
-from zope.component import provideHandler, getGlobalSiteManager
-from zc.async.testing import wait_for_result
-from Products.PloneTestCase.setup import PLONE40
+# -*- coding: utf-8 -*-
+from plone.app.async.interfaces import IJobFailure
+from plone.app.async.interfaces import IJobSuccess
 from plone.app.async.tests.base import AsyncTestCase
-from plone.app.async.interfaces import IJobSuccess, IJobFailure
+from Products.PloneTestCase.setup import PLONE40
+from zc.async.testing import wait_for_result
+from zope.component import getGlobalSiteManager
+from zope.component import provideHandler
+
+import transaction
 
 
 events = []

@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+from plone.app.async.testing import PLONE_APP_ASYNC_FUNCTIONAL_TESTING
+from plone.testing import layered
+
 import doctest
-import unittest2 as unittest
-import os
 import glob
 import logging
-from plone.testing import layered
-from plone.app.async.testing import PLONE_APP_ASYNC_FUNCTIONAL_TESTING
+import os
+import unittest2 as unittest
+
 
 optionflags = (doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
 
@@ -37,4 +40,3 @@ def test_suite():
             ),
         ])
     return suite
-

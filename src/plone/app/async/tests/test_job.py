@@ -1,8 +1,10 @@
-import transaction
-import time
-from zc.async.testing import wait_for_result
-from Products.PloneTestCase.PloneTestCase import default_user
+# -*- coding: utf-8 -*-
 from plone.app.async.tests.base import AsyncTestCase
+from Products.PloneTestCase.PloneTestCase import default_user
+from zc.async.testing import wait_for_result
+
+import time
+import transaction
 
 
 def addNumbers(x1, x2):

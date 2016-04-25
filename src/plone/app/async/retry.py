@@ -1,6 +1,8 @@
-import BTrees.OOBTree
+# -*- coding: utf-8 -*-
 from datetime import timedelta
 from zc.async.job import RetryCommonFourTimes
+
+import BTrees.OOBTree
 
 
 class RetryWithDelay(RetryCommonFourTimes):

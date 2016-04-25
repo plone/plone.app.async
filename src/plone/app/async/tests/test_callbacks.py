@@ -1,7 +1,9 @@
-import transaction
-from zc.async.testing import wait_for_result
-from Products.PloneTestCase.setup import PLONE40
+# -*- coding: utf-8 -*-
 from plone.app.async.tests.base import AsyncTestCase
+from Products.PloneTestCase.setup import PLONE40
+from zc.async.testing import wait_for_result
+
+import transaction
 
 
 results = []

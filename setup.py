@@ -1,5 +1,8 @@
-from setuptools import setup, find_packages
+# -*- coding: utf-8 -*-
+from setuptools import find_packages
+from setuptools import setup
 from os.path import join
+
 
 version = '1.7.0dev0'
 
@@ -36,14 +39,14 @@ setup(name='plone.app.async',
       platforms='Any',
       zip_safe=False,
       install_requires=[
+          'five.intid >= 1.0.3',
+          'rwproperty',
           'setuptools',
+          'simplejson',
           'zc.async',
           'zc.monitor',
           'zc.z3monitor',
-          'five.intid >= 1.0.3',
           'zope.keyreference',
-          'rwproperty',
-          'simplejson',
           'zope.minmax'
       ],
       extras_require={'plone4_test': [

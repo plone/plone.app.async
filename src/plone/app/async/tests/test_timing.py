@@ -1,8 +1,10 @@
-import transaction
-from zc.async.testing import wait_for_result
-from plone.app.async.utils import wait_for_all_jobs
+# -*- coding: utf-8 -*-
 from plone.app.async.tests.base import AsyncTestCase
+from plone.app.async.utils import wait_for_all_jobs
+from zc.async.testing import wait_for_result
+
 import time
+import transaction
 
 
 results = []
@@ -93,4 +95,3 @@ def test_suite():
     suite = TestSuite()
     suite.addTest(makeSuite(TestTiming))
     return suite
-

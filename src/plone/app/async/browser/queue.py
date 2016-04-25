@@ -1,17 +1,21 @@
-import inspect
+# -*- coding: utf-8 -*-
 from DateTime import DateTime
 from datetime import datetime
-from zope.cachedescriptors.property import Lazy as lazy_property
-from zope.component import getUtility
+from plone.app.async.interfaces import IAsyncService
 from Products.Five import BrowserView
-from zc.async.interfaces import ACTIVE, COMPLETED
+from webdav.xmltools import escape
+from zc.async.interfaces import ACTIVE
+from zc.async.interfaces import COMPLETED
 from zc.async.utils import custom_repr
 from zc.twist import Failure
-from plone.app.async.interfaces import IAsyncService
-from webdav.xmltools import escape
-from ZODB.utils import p64, u64
-import simplejson as json
+from ZODB.utils import p64
+from ZODB.utils import u64
+from zope.cachedescriptors.property import Lazy as lazy_property
+from zope.component import getUtility
+
+import inspect
 import pytz
+import simplejson as json
 
 
 local_zone = DateTime().asdatetime().tzinfo

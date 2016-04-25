@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from zope import interface
 from zope.component.interfaces import IObjectEvent
 

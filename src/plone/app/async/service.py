@@ -1,24 +1,32 @@
+# -*- coding: utf-8 -*-
+from AccessControl.SecurityManagement import getSecurityManager
+from AccessControl.SecurityManagement import newSecurityManager
+from AccessControl.SecurityManagement import noSecurityManager
+from AccessControl.User import SpecialUser
+from plone.app.async.interfaces import IAsyncDatabase
+from plone.app.async.interfaces import IAsyncService
+from plone.app.async.interfaces import JobFailure
+from plone.app.async.interfaces import JobSuccess
+from Products.CMFCore.interfaces import ISiteRoot
+from zc.async.interfaces import KEY
+from zc.async.job import Job
+from zc.async.job import parallel
+from zc.async.job import serial
+from zExceptions import BadRequest
+from zope.component import getUtility
+from zope.event import notify
+from zope.interface import implements
+
 import threading
 import Zope2
 
-from zope.component import getUtility
-from zope.interface import implements
-from zope.event import notify
+
 try:
     # plone < 4.3
     from zope.app.component.hooks import setSite
 except:
     from zope.component.hooks import setSite
 
-from zExceptions import BadRequest
-from AccessControl.SecurityManagement import noSecurityManager,\
-    newSecurityManager, getSecurityManager
-from AccessControl.User import SpecialUser
-from Products.CMFCore.interfaces import ISiteRoot
-from zc.async.interfaces import KEY
-from zc.async.job import serial, parallel, Job
-from plone.app.async.interfaces import IAsyncDatabase, IAsyncService
-from plone.app.async.interfaces import JobSuccess, JobFailure
 
 
 def makeJob(func, context, *args, **kwargs):

@@ -1,13 +1,15 @@
+# -*- coding: utf-8 -*-
+from plone.app.async.interfaces import IAsyncService
+from plone.app.async.service import makeJob
+from plone.app.async.tests.base import AsyncTestCase
+from Products.CMFCore.utils import getToolByName
+from Products.PloneTestCase.PloneTestCase import default_user
+from zc.async.testing import wait_for_result
+from zope.component import getUtility
+
 import datetime
 import pytz
 import transaction
-from zope.component import getUtility
-from zc.async.testing import wait_for_result
-from Products.PloneTestCase.PloneTestCase import default_user
-from Products.CMFCore.utils import getToolByName
-from plone.app.async.tests.base import AsyncTestCase
-from plone.app.async.interfaces import IAsyncService
-from plone.app.async.service import makeJob
 
 
 def addNumbers(context, x1, x2):

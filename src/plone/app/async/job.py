@@ -1,14 +1,18 @@
+# -*- coding: utf-8 -*-
+from AccessControl.SecurityManagement import getSecurityManager
+from AccessControl.SecurityManagement import newSecurityManager
+from AccessControl.SecurityManagement import noSecurityManager
+from AccessControl.User import SpecialUser
+from OFS.interfaces import ITraversable
+from Products.CMFCore.utils import getToolByName
+from zope.site.hooks import getSite
+from zope.site.hooks import setSite
+
 import rwproperty
 import threading
 import types
 import zc.async.job
 import Zope2
-from AccessControl.SecurityManagement import noSecurityManager,\
-    newSecurityManager, getSecurityManager
-from AccessControl.User import SpecialUser
-from zope.site.hooks import getSite, setSite
-from Products.CMFCore.utils import getToolByName
-from OFS.interfaces import ITraversable
 
 
 tldata = threading.local()
