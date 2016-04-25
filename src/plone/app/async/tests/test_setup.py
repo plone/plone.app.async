@@ -15,6 +15,7 @@ import unittest2 as unittest
 def dbUsed(context):
     return str(context._p_jar.db())
 
+
 class TestCaseSetup(AsyncTestCase):
 
     def test_async_db(self):
@@ -28,13 +29,14 @@ class TestCaseSetup(AsyncTestCase):
         self.failUnless(self.async.getQueues() is not None)
 
     def test_quotas_present(self):
-        self.failUnless(self.async.getQueues()[''].quotas.get('default') is not None)
+        self.failUnless(self.async.getQueues()[
+                        ''].quotas.get('default') is not None)
 
     def test_job_sees_main_db(self):
         job = self.async.queueJob(dbUsed, self.folder)
         transaction.commit()
         wait_for_result(job)
-        self.assertEqual(job.result,str(self.app._p_jar.db()))
+        self.assertEqual(job.result, str(self.app._p_jar.db()))
 
 
 def test_suite():

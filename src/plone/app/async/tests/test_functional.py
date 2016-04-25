@@ -20,7 +20,7 @@ except ImportError:
 
 def createDocument(context, anid, title, description, body):
     context.invokeFactory('Document', anid,
-        title=title, description=description, text=body)
+                          title=title, description=description, text=body)
     return context[anid].id
 
 
@@ -48,6 +48,7 @@ class TestView(formbase.PageForm):
         self.testing()
         return ''
 
+
 class TestFunctional(FunctionalAsyncTestCase):
     """This test is here to make sure that the FunctionalAsyncTestCase is
     working properly. In order to do we register and load a browser view that
@@ -56,7 +57,7 @@ class TestFunctional(FunctionalAsyncTestCase):
 
     def test_view(self):
         browser = self.getBrowser()
-        browser.open(self.folder.absolute_url()+"/@@testview")
+        browser.open(self.folder.absolute_url() + "/@@testview")
         browser.getControl("Apply").click()
         wait_for_all_jobs()
         self.failUnless('anidf' in self.folder)

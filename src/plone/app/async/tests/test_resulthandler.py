@@ -57,7 +57,8 @@ class TestResultHandler(AsyncTestCase):
         result = events[0].object
 
         if PLONE40:
-            self.assertEquals(str(result.type), "<type 'exceptions.RuntimeError'>")
+            self.assertEquals(str(result.type),
+                              "<type 'exceptions.RuntimeError'>")
             self.assertEquals(str(result.value), 'FooBar')
         else:
             self.assertEquals(str(result.type), 'exceptions.RuntimeError')

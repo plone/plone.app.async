@@ -28,7 +28,6 @@ except:
     from zope.component.hooks import setSite
 
 
-
 def makeJob(func, context, *args, **kwargs):
     """Return a job_info tuple."""
     return (func, context, args, kwargs)
@@ -44,7 +43,7 @@ def _getAuthenticatedUser():
 
 
 def _executeAsUser(context_path, portal_path, uf_path, user_id, func, *args,
-    **kwargs):
+                   **kwargs):
     """Reconstruct environment and execute func."""
     transaction = Zope2.zpublisher_transactions_manager  # Supports isDoomed
     transaction.begin()
@@ -141,7 +140,7 @@ class AsyncService(threading.local):
                                      begin_by, begin_after)
 
     def queueJobWithDelay(self, begin_by, begin_after, func, context, *args,
-        **kwargs):
+                          **kwargs):
         return self.queueJobInQueueWithDelay(
             begin_by, begin_after, '', ('default',),
             func, context, *args, **kwargs)
@@ -153,7 +152,7 @@ class AsyncService(threading.local):
         func, context, args, kwargs = job_info
         context_path = context.getPhysicalPath()
         job = Job(_executeAsUser, context_path, portal_path, uf_path,
-            user_id, func, *args, **kwargs)
+                  user_id, func, *args, **kwargs)
         return job
 
     def __queueJobInQueue(self, begin_by, begin_after, queue,
@@ -186,12 +185,12 @@ class AsyncService(threading.local):
     def queueSerialJobsInQueue(self, queue, quota_names, *job_infos):
         """Queue serial jobs in the specified queue."""
         return self._queueJobsInQueue(queue, quota_names, job_infos,
-            serialize=True)
+                                      serialize=True)
 
     def queueParallelJobsInQueue(self, queue, quota_names, *job_infos):
         """Queue parallel jobs in the specified queue."""
         return self._queueJobsInQueue(queue, quota_names, job_infos,
-            serialize=False)
+                                      serialize=False)
 
     def queueSerialJobs(self, *job_infos):
         """Queue serial jobs in the default queue."""

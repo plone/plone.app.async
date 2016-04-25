@@ -81,7 +81,7 @@ def setUpQueue(db):
 def setUpDispatcher(db, uuid=None):
     event = DatabaseOpened(db)
     ThreadedDispatcherInstaller(poll_interval=0.2, uuid=uuid)(event)
-    time.sleep(0.1) # Allow the thread to start up
+    time.sleep(0.1)  # Allow the thread to start up
 
 
 def cleanUpDispatcher(uuid=None):
@@ -98,6 +98,8 @@ def cleanUpDispatcher(uuid=None):
 """
 ASYNC_LAYERS = []
 stackDemoStorage_attr = '_old_stackDemoStorage'
+
+
 def async_stackDemoStorage(*args, **kwargs):
     db = getattr(zodb, stackDemoStorage_attr)(*args, **kwargs)
     # we patch only the last stacked storage.
@@ -107,10 +109,12 @@ def async_stackDemoStorage(*args, **kwargs):
 if not getattr(zodb, stackDemoStorage_attr, None):
     setattr(zodb, stackDemoStorage_attr, zodb.stackDemoStorage)
     zodb.stackDemoStorage = async_stackDemoStorage
+
+
 def createAsyncDB(db):
-    async_db = DB(DemoStorage(name='async'), database_name = 'async')
+    async_db = DB(DemoStorage(name='async'), database_name='async')
     multi_db = DB(DemoStorage('AsyncLayerS', base=db.storage),
-                  databases = {'async': async_db,})
+                  databases={'async': async_db, })
     component.provideUtility(async_db, IAsyncDatabase)
     component.provideHandler(agent_installer, [IDispatcherActivated])
     component.provideHandler(notifyQueueReady, [IDispatcherActivated])
@@ -119,6 +123,7 @@ def createAsyncDB(db):
     setUpDispatcher(multi_db, _dispatcher_uuid)
     transaction.commit()
     return multi_db
+
 
 def registerAsyncLayers(layer_or_layers):
     """Third magic is there, you ll need in
@@ -131,6 +136,7 @@ def registerAsyncLayers(layer_or_layers):
     for l in layer_or_layers:
         if not l in ASYNC_LAYERS:
             ASYNC_LAYERS.append(l)
+
 
 class AsyncLayer(PloneSandboxLayer):
 
@@ -168,8 +174,10 @@ class AsyncLayer(PloneSandboxLayer):
 # compat !
 AsyncSandbox = AsyncLayer
 
+
 class LayerMixin(Layer):
-    defaultBases = (AsyncLayer() ,)
+    defaultBases = (AsyncLayer(),)
+
     def testTearDown(self):
         self.loginAsPortalOwner()
         if 'test-folder' in self['portal'].objectIds():
@@ -187,7 +195,7 @@ class LayerMixin(Layer):
                 PLONE_MANAGER_ID,
                 PLONE_MANAGER_NAME,
                 PLONE_MANAGER_PASSWORD,
-                ['Manager']+TEST_USER_ROLES)
+                ['Manager'] + TEST_USER_ROLES)
             self.logout()
         self.login(TEST_USER_NAME)
         self.setRoles(['Manager'])
@@ -198,7 +206,8 @@ class LayerMixin(Layer):
         transaction.commit()
 
     def add_user(self, portal, id, username, password, roles=None):
-        if not roles: roles = TEST_USER_ROLES[:]
+        if not roles:
+            roles = TEST_USER_ROLES[:]
         self.loginAsPortalOwner()
         pas = portal['acl_users']
         pas.source_users.addUser(id, username, password)
@@ -227,6 +236,7 @@ class LayerMixin(Layer):
 
 
 class IntegrationTesting(LayerMixin, BIntegrationTesting,):
+
     def testSetUp(self):
         BIntegrationTesting.testSetUp(self)
         transaction.commit()
@@ -278,12 +288,15 @@ class FunctionalTesting(LayerMixin, BFunctionalTesting):
         del self['app']
         del self['request']
 
-AsyncFunctionalTesting = FunctionalTesting # compat
+AsyncFunctionalTesting = FunctionalTesting  # compat
 
-PLONE_APP_ASYNC_FIXTURE             = AsyncLayer()
-PLONE_APP_ASYNC_INTEGRATION_TESTING = IntegrationTesting(name = "PloneAppAsync:Integration")
-PLONE_APP_ASYNC_FUNCTIONAL_TESTING  = AsyncFunctionalTesting( name = "PloneAppAsync:Functional")
-PLONE_APP_ASYNC_SELENIUM_TESTING    = AsyncFunctionalTesting(bases = (SELENIUM_TESTING, PLONE_APP_ASYNC_FUNCTIONAL_TESTING,), name = "PloneAppAsync:Selenium")
+PLONE_APP_ASYNC_FIXTURE = AsyncLayer()
+PLONE_APP_ASYNC_INTEGRATION_TESTING = IntegrationTesting(
+    name="PloneAppAsync:Integration")
+PLONE_APP_ASYNC_FUNCTIONAL_TESTING = AsyncFunctionalTesting(
+    name="PloneAppAsync:Functional")
+PLONE_APP_ASYNC_SELENIUM_TESTING = AsyncFunctionalTesting(bases=(
+    SELENIUM_TESTING, PLONE_APP_ASYNC_FUNCTIONAL_TESTING,), name="PloneAppAsync:Selenium")
 
 """
 For plone.app.async descendants addons, you ll need to
@@ -294,5 +307,5 @@ registerAsyncLayers(
     [PLONE_APP_ASYNC_FIXTURE,
      PLONE_APP_ASYNC_INTEGRATION_TESTING,
      PLONE_APP_ASYNC_FUNCTIONAL_TESTING,
-     PLONE_APP_ASYNC_SELENIUM_TESTING,]
+     PLONE_APP_ASYNC_SELENIUM_TESTING, ]
 )

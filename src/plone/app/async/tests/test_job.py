@@ -30,6 +30,7 @@ def fail_once():
         raise Exception('Job failed.')
     return time.time() - fail_once.start
 
+
 def deferred_queue():
     from plone.app.async import queue, Job
     queue(Job(addNumbers, 1, 1))
@@ -54,7 +55,7 @@ class TestJob(AsyncTestCase):
         from plone.app.async import Job, queue
         self.setRoles(['Manager'])
         job = queue(Job(self.folder.invokeFactory, 'Document', 'anid',
-            title='atitle', description='adescr', text='abody'))
+                        title='atitle', description='adescr', text='abody'))
         transaction.commit()
         self.assertEqual(job.status, u'pending-status')
         wait_for_result(job)
@@ -71,7 +72,8 @@ class TestJob(AsyncTestCase):
         job = queue(Job(doom))
         transaction.commit()
         wait_for_result(job)
-        self.assertTrue(job.result.type is transaction.interfaces.DoomedTransaction)
+        self.assertTrue(
+            job.result.type is transaction.interfaces.DoomedTransaction)
         self.assertEqual(5, doom.retries)
 
     def test_delayed_retry(self):

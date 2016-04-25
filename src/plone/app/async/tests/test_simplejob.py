@@ -13,12 +13,12 @@ import transaction
 
 
 def addNumbers(context, x1, x2):
-    return x1+x2
+    return x1 + x2
 
 
 def createDocument(context, anid, title, description, body):
     context.invokeFactory('Document', anid,
-        title=title, description=description, text=body)
+                          title=title, description=description, text=body)
     return context[anid].id
 
 
@@ -44,14 +44,16 @@ def createDocumentAndPublish(context, anid, title, description, body):
 def reindexDocument(context):
     context.reindexObject()
 
+
 def searchForDocument(context, doc_id):
     ct = getToolByName(context, 'portal_catalog')
-    return len(ct.searchResults(getId = doc_id))
+    return len(ct.searchResults(getId=doc_id))
 
 
 class TestSimpleJob(AsyncTestCase):
     """
     """
+
     def setUp(self):
         AsyncTestCase.setUp(self)
         self.login()
@@ -72,7 +74,7 @@ class TestSimpleJob(AsyncTestCase):
         """Adding a job that creates persistent objects.
         """
         job = self.async.queueJob(createDocument,
-            self.folder, 'anide', 'atitle', 'adescr', 'abody')
+                                  self.folder, 'anide', 'atitle', 'adescr', 'abody')
         transaction.commit()
         self.assertEqual(job.status, u'pending-status')
         wait_for_result(job)
@@ -85,9 +87,10 @@ class TestSimpleJob(AsyncTestCase):
     def test_serial_jobs(self):
         """Queue two jobs the one after the other.
         """
-        job1 = (createDocument, self.folder, ('anid2', 'atitle', 'adescr', 'abody'), {})
+        job1 = (createDocument, self.folder,
+                ('anid2', 'atitle', 'adescr', 'abody'), {})
         job2 = (publishDocument, self.folder, ('anid2',), {})
-        job = self.async.queueSerialJobs(job1,job2)
+        job = self.async.queueSerialJobs(job1, job2)
         transaction.commit()
         wait_for_result(job)
         self.assertEqual(job.result[0].result, 'anid2')
@@ -100,7 +103,7 @@ class TestSimpleJob(AsyncTestCase):
         """Queue a job that queues another job.
         """
         job = self.async.queueJob(createDocumentAndPublish,
-            self.folder, 'anid23', 'atitle', 'adescr', 'abody')
+                                  self.folder, 'anid23', 'atitle', 'adescr', 'abody')
         transaction.commit()
         wait_for_result(job)
         self.assertEqual(job.result, 'workflow_change')
@@ -111,12 +114,14 @@ class TestSimpleJob(AsyncTestCase):
     def test_serial_jobs3(self):
         """Mix queueJob and queueSerialJobs.
         """
-        job = self.async.queueJob(createDocument, self.folder, 'anid3', 'atitle', 'adescr', 'abody')
+        job = self.async.queueJob(
+            createDocument, self.folder, 'anid3', 'atitle', 'adescr', 'abody')
         self.assertEqual(job.quota_names, ('default',))
 
         job2 = self.async.queueSerialJobs(
             makeJob(publishDocument, self.folder, 'anid3'),
-            makeJob(createDocument, self.folder, 'anotherid3', 'atitle', 'adescr', 'abody'),
+            makeJob(createDocument, self.folder, 'anotherid3',
+                    'atitle', 'adescr', 'abody'),
         )
         self.assertEqual(job2.quota_names, ('default',))
 
@@ -140,7 +145,7 @@ class TestSimpleJob(AsyncTestCase):
         """Queue indexing.
         """
         self.folder.invokeFactory('Document', 'anid4',
-            title='Foo', description='Foo', text='foo')
+                                  title='Foo', description='Foo', text='foo')
         doc = self.folder['anid4']
         doc.setDescription('bar')
         ct = getToolByName(self.folder, 'portal_catalog')
@@ -156,7 +161,7 @@ class TestSimpleJob(AsyncTestCase):
         """Demonstrate calling an object's method.
         """
         self.folder.invokeFactory('Document', 'anid5',
-            title='Foo', description='Foo', text='foo')
+                                  title='Foo', description='Foo', text='foo')
         doc = self.folder['anid5']
         doc.setDescription('bar')
         ct = getToolByName(self.folder, 'portal_catalog')
@@ -172,7 +177,7 @@ class TestSimpleJob(AsyncTestCase):
     def test_job_as_anonymous(self):
         # Add new document
         self.folder.invokeFactory('Document', 'anid6',
-            title='Foo', description='Foo', text='foo')
+                                  title='Foo', description='Foo', text='foo')
         doc = self.folder['anid6']
         wt = getToolByName(self.folder, 'portal_workflow')
         # Document must be private (not accessible by anon)
@@ -202,7 +207,6 @@ class TestSimpleJob(AsyncTestCase):
         self.assertTrue((after - before).seconds >= 1)
 
 
-        
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()

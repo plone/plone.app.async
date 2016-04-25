@@ -36,6 +36,7 @@ class Job(zc.async.job.Job):
             callable_root = tldata.app.unrestrictedTraverse(path)
             return getattr(callable_root, self._callable_name)
         return super(Job, self).callable
+
     @rwproperty.setproperty
     def callable(self, value):
         if isinstance(value, types.MethodType) and ITraversable.providedBy(value.im_self):

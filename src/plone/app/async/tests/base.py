@@ -40,6 +40,7 @@ class AsyncTestCase(unittest.TestCase):
     def setRoles(self, roles=None):
         self.layer.setRoles(roles)
 
+
 class FunctionalAsyncTestCase(AsyncTestCase):
     """For functional tests.
     """

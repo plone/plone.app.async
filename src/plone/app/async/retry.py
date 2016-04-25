@@ -16,7 +16,7 @@ class RetryWithDelay(RetryCommonFourTimes):
     max_retries = 8
     job_exceptions = RetryCommonFourTimes.internal_exceptions + (
         ((Exception,), 'job_error', max_retries, 0, 0, 0,),
-        )
+    )
     datacache_key = 'job_error'
 
     def __init__(self, delay=timedelta(minutes=15)):

@@ -140,7 +140,7 @@ class JobsJSON(BrowserView):
                     retries = job._retry_policy.data.get('job_error', 0)
                 if retries:
                     return 'Retry #%s scheduled for %s' % (retries,
-                        self.format_datetime(job.begin_after))
+                                                           self.format_datetime(job.begin_after))
                 else:
                     return 'Scheduled for %s' % self.format_datetime(
                         job.begin_after)
@@ -166,11 +166,11 @@ class JobsJSON(BrowserView):
             argnames = None
         if argnames is not None:
             args = ', '.join('%s=%s' % (k, v)
-                                for k, v in zip(argnames, job.args))
+                             for k, v in zip(argnames, job.args))
         else:
             args = ', '.join(custom_repr(a) for a in job.args)
         kwargs = ', '.join(k + "=" + custom_repr(v)
-                            for k, v in job.kwargs.items())
+                           for k, v in job.kwargs.items())
         if args and kwargs:
             args += ", " + kwargs
         elif kwargs:

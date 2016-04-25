@@ -11,6 +11,7 @@ import unittest2 as unittest
 
 optionflags = (doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
 
+
 def test_suite():
     """."""
     logger = logging.getLogger('plone.app.async.tests')
@@ -23,7 +24,7 @@ def test_suite():
             os.path.dirname(cwd), '*txt'))
         files += glob.glob(os.path.join(
             os.path.dirname(cwd), '*rst'))
-    except Exception,e:
+    except Exception, e:
         logger.warn('No doctests for collective.cron')
     suite = unittest.TestSuite()
     globs = globals()
@@ -31,10 +32,10 @@ def test_suite():
         suite.addTests([
             layered(
                 doctest.DocFileSuite(
-                    s, 
-                    globs = globs,
+                    s,
+                    globs=globs,
                     module_relative=False,
-                    optionflags=optionflags,         
+                    optionflags=optionflags,
                 ),
                 layer=PLONE_APP_ASYNC_FUNCTIONAL_TESTING
             ),
