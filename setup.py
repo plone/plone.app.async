@@ -3,7 +3,6 @@ from setuptools import find_packages
 from setuptools import setup
 from os.path import join
 
-
 version = '1.7.0dev0'
 description = 'Integration package for zc.async allowing asynchronous ' \
               'operations in Plone'
