@@ -150,8 +150,12 @@ class TestSimpleJob(AsyncTestCase):
         self.folder.invokeFactory('Document', 'anid4',
                                   title='Foo', description='Foo', text='foo')
         doc = self.folder['anid4']
-        doc.setDescription('bar')
+
         ct = getToolByName(self.folder, 'portal_catalog')
+        res = ct.searchResults(Description='bar')
+        self.assertEqual(len(res), 0)
+
+        doc.setDescription('bar')
         res = ct.searchResults(Description='bar')
         self.assertEqual(len(res), 0)
 
@@ -166,8 +170,10 @@ class TestSimpleJob(AsyncTestCase):
         self.folder.invokeFactory('Document', 'anid5',
                                   title='Foo', description='Foo', text='foo')
         doc = self.folder['anid5']
+        res = ct.searchResults(Description='bar')
+        self.assertEqual(len(res), 1)
+
         doc.setDescription('bar')
-        ct = getToolByName(self.folder, 'portal_catalog')
         res = ct.searchResults(Description='bar')
         self.assertEqual(len(res), 1)
 
