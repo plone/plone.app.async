@@ -7,7 +7,7 @@ Changelog
 
 - Add zope.minmax dependency
   [vangheem]
-
+- Fix tests for plone 5. Remove plone 3 compatibility [jensens]
 
 1.4 (2012-10-09)
 ----------------

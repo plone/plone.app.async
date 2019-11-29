@@ -1,19 +1,14 @@
-import unittest2 as unittest
-from zope.component import getUtility
-from plone.app.testing import setRoles
-from plone.app.async.testing import (
-    PLONE_APP_ASYNC_FIXTURE,
-    PLONE_APP_ASYNC_INTEGRATION_TESTING,
-    PLONE_APP_ASYNC_FUNCTIONAL_TESTING,
-    PLONE_APP_ASYNC_SELENIUM_TESTING,
-    TEST_USER_ID,
-    TEST_USER_NAME,
-    TEST_USER_ROLES,
-    PLONE_MANAGER_NAME,
-    PLONE_MANAGER_PASSWORD,
-)
+# -*- coding: utf-8 -*-
 from plone.app.async.interfaces import IAsyncService
+from plone.app.async.testing import PLONE_APP_ASYNC_FUNCTIONAL_TESTING
+from plone.app.async.testing import PLONE_APP_ASYNC_INTEGRATION_TESTING
+from plone.app.async.testing import PLONE_MANAGER_NAME
+from plone.app.async.testing import PLONE_MANAGER_PASSWORD
 from plone.testing.z2 import Browser
+from zope.component import getUtility
+
+import unittest as unittest
+
 
 class AsyncTestCase(unittest.TestCase):
     """We use this base class for all the tests in this package.
@@ -28,16 +23,8 @@ class AsyncTestCase(unittest.TestCase):
         self.folder = self.layer['test-folder']
 
     def tearDown(self):
-        self.setRoles()
-
-    def logout(self):
         self.layer.logout()
 
-    def login(self, id=None):
-        return self.layer.login(id)
-
-    def setRoles(self, roles=None):
-        self.layer.setRoles(roles)
 
 class FunctionalAsyncTestCase(AsyncTestCase):
     """For functional tests.

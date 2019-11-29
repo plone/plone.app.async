@@ -1,14 +1,17 @@
-import rwproperty
+# -*- coding: utf-8 -*-
+from AccessControl.SecurityManagement import getSecurityManager
+from AccessControl.SecurityManagement import newSecurityManager
+from AccessControl.SecurityManagement import noSecurityManager
+from AccessControl.User import SpecialUser
+from OFS.interfaces import ITraversable
+from Products.CMFCore.utils import getToolByName
+from zope.site.hooks import getSite
+from zope.site.hooks import setSite
+
 import threading
 import types
 import zc.async.job
 import Zope2
-from AccessControl.SecurityManagement import noSecurityManager,\
-    newSecurityManager, getSecurityManager
-from AccessControl.User import SpecialUser
-from zope.site.hooks import getSite, setSite
-from Products.CMFCore.utils import getToolByName
-from OFS.interfaces import ITraversable
 
 
 tldata = threading.local()
@@ -32,9 +35,13 @@ class Job(zc.async.job.Job):
             callable_root = tldata.app.unrestrictedTraverse(path)
             return getattr(callable_root, self._callable_name)
         return super(Job, self).callable
-    @rwproperty.setproperty
+
+    @callable.setter
     def callable(self, value):
-        if isinstance(value, types.MethodType) and ITraversable.providedBy(value.im_self):
+        if (
+            isinstance(value, types.MethodType) and
+            ITraversable.providedBy(value.im_self)
+        ):
             self._callable_path = value.im_self.getPhysicalPath()
             self._callable_name = value.__name__
         else:
@@ -48,7 +55,7 @@ class Job(zc.async.job.Job):
 
         user = getSecurityManager().getUser()
         if isinstance(user, SpecialUser):
-            self.uf_path, user_id = (), None
+            self.uf_path, self.user_id = (), None
         else:
             self.uf_path = user.aq_parent.getPhysicalPath()
             self.user_id = user.getId()

@@ -4,8 +4,7 @@ plone.app.async
 
 Introduction
 ============
-Integration package for `zc.async`_ allowing asynchronous operations in
-Plone 3 and 4.
+Integration package for `zc.async`_ allowing asynchronous operations in Plone 4 and 5.
 
 .. contents::
 
@@ -15,14 +14,12 @@ Repository
 
 Installation
 ============
-You will typically run ``plone.app.async`` in a ZEO environment, where you
-will have one or more *worker* instances carrying out jobs queued by your
-main zope instances.
+You will typically run ``plone.app.async`` in a ZEO environment,
+where you will have one or more *worker* instances carrying out jobs queued by your main zope instances.
 
-For the sake of simplicity it is assumed that you have one instance that can
-queue new jobs, and one worker instance that consumes them, both operating on
-a single database. In this case your buildout configuration will look similar
-to the following::
+For the sake of simplicity it is assumed that you have one instance that can queue new jobs,
+and one worker instance that consumes them,
+both operating on a single database. In this case your buildout configuration will look similar to the following::
 
   [zeo]
   recipe = plone.recipe.zope2zeoserver
@@ -48,37 +45,24 @@ to the following::
 
 There are two important stanzas here:
 
-* Each instance has to set the ``ZC_ASYNC_UUID`` environment variable in order
-  to integrate properly with `zc.async`_.
+* Each instance has to set the ``ZC_ASYNC_UUID`` environment variable in order to integrate properly with `zc.async`_.
 
 * Each instance loads the ``single_db_instance.zcml`` configuration.
-  The worker instance loads the ``single_db_worker.zcml`` configuration
-  in order to setup the queue and configure itself as a dispatcher.
+  The worker instance loads the ``single_db_worker.zcml`` configuration in order to setup the queue and configure itself as a dispatcher.
 
-For more details please look at the `example buildout configurations`_ included in
-the package.
+For more details please look at the `example buildout configurations`_ included in the package.
 
 .. _`example buildout configurations`: https://github.com/plone/plone.app.async
 
 
-Plone 3
--------
-
-Use zope.app.keyreference
-
-
-Plone 4
--------
-
-Use five.intid
-
-
 Credits
 =======
+
 Code from Enfold's `plone.async.core`_ package has been used for setting up the queues.
 
 References
 ==========
+
 * `zc.async`_ on PyPI
 * `plone.async.core`_ Subversion repository
 

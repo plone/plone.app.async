@@ -1,11 +1,14 @@
-import transaction
-from zc.async.testing import wait_for_result
-from plone.app.async.utils import wait_for_all_jobs
+# -*- coding: utf-8 -*-
 from plone.app.async.tests.base import AsyncTestCase
+from plone.app.async.utils import wait_for_all_jobs
+from zc.async.testing import wait_for_result
+
 import time
+import transaction
 
 
 results = []
+
 
 def job1(context):
     time.sleep(3)
@@ -30,7 +33,7 @@ class TestTiming(AsyncTestCase):
         j1 = (job1, self.folder, (), {})
         j2 = (job2, self.folder, (), {})
         j3 = (job3, self.folder, (), {})
-        job = self.async.queueSerialJobs(j1,j2,j3)
+        job = self.async.queueSerialJobs(j1, j2, j3)
         transaction.commit()
         wait_for_result(job, seconds=20)
         self.assertEquals(results, [1, 2, 3])
@@ -42,7 +45,7 @@ class TestTiming(AsyncTestCase):
         j1 = (job1, self.folder, (), {})
         j2 = (job2, self.folder, (), {})
         j3 = (job3, self.folder, (), {})
-        job = self.async.queueParallelJobs(j1,j2,j3)
+        job = self.async.queueParallelJobs(j1, j2, j3)
         transaction.commit()
         wait_for_result(job, seconds=20)
         self.assertEquals(set(results), set([3, 2, 1]))
@@ -93,4 +96,3 @@ def test_suite():
     suite = TestSuite()
     suite.addTest(makeSuite(TestTiming))
     return suite
-

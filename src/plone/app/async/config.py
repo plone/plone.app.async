@@ -1,36 +1,41 @@
-import os
-import logging
-import Zope2
-from ZODB.interfaces import IDatabase
-from Zope2.App import startup
-from App.config import getConfiguration
+# -*- coding: utf-8 -*-
 from AccessControl.SecurityManagement import noSecurityManager
-from zope import interface, component
-from zope.app.appsetup.interfaces import DatabaseOpened
-import zc.monitor
-import zc.async.dispatcher
+from App.config import getConfiguration
+from plone.app.async.interfaces import IAsyncDatabase
+from plone.app.async.interfaces import IInitAsync
 from zc.async import subscribers
-from plone.app.async.interfaces import IInitAsync, IAsyncDatabase
+from ZODB.interfaces import IDatabase
+from zope.component import provideUtility
+from zope.component import queryUtility
+from zope.interface import implementer
+from Zope2.App import startup
+from zope.app.appsetup.interfaces import DatabaseOpened
+
+import logging
+import os
+import zc.async.dispatcher
+import zc.monitor
+import Zope2
+
 
 logger = logging.getLogger('plone.app.async')
 
 
+@implementer(IInitAsync)
 class InitInstance(object):
-
-    interface.implements(IInitAsync)
 
     db_name = None
 
     def init(self):
-        component.provideUtility(Zope2.DB, IDatabase)
+        provideUtility(Zope2.DB, IDatabase)
 
         configuration = getConfiguration()
         for name in configuration.dbtab.listDatabaseNames():
             db = configuration.dbtab.getDatabase(name=name)
-            component.provideUtility(db, IDatabase, name=name)
+            provideUtility(db, IDatabase, name=name)
 
         db = configuration.dbtab.getDatabase(name=self.db_name)
-        component.provideUtility(db, IAsyncDatabase)
+        provideUtility(db, IAsyncDatabase)
 
 
 class InitSingleDBInstance(InitInstance):
@@ -43,21 +48,21 @@ class InitMultiDBInstance(InitInstance):
     db_name = 'async'
 
 
+@implementer(IInitAsync)
 class InitWorker(object):
-    interface.implements(IInitAsync)
 
     db_name = None
 
     def init(self):
-        component.provideUtility(Zope2.DB, IDatabase)
+        provideUtility(Zope2.DB, IDatabase)
 
         configuration = getConfiguration()
         for name in configuration.dbtab.listDatabaseNames():
             db = configuration.dbtab.getDatabase(name=name)
-            component.provideUtility(db, IDatabase, name=name)
+            provideUtility(db, IDatabase, name=name)
 
         db = configuration.dbtab.getDatabase(name=self.db_name)
-        component.provideUtility(db, IAsyncDatabase)
+        provideUtility(db, IAsyncDatabase)
 
         ev = DatabaseOpened(db)
         subscribers.queue_installer(ev)
@@ -84,7 +89,7 @@ class InitMultiDBWorker(InitWorker):
 def init_zasync():
     noSecurityManager()
 
-    initializer = component.queryUtility(IInitAsync)
+    initializer = queryUtility(IInitAsync)
     if initializer is not None:
         initializer.init()
 

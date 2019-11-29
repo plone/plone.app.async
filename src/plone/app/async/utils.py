@@ -1,8 +1,10 @@
-from transaction import begin, commit
-from zope import component
+# -*- coding: utf-8 -*-
+from plone.app.async.interfaces import IAsyncService
+from transaction import begin
+from transaction import commit
 from zc.async.testing import wait_for_result
 from zc.twist import Failure
-from plone.app.async.interfaces import IAsyncService
+from zope import component
 
 
 def wait_for_all_jobs(seconds=6, assert_successful=True):
