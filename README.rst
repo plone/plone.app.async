@@ -2,6 +2,8 @@
 plone.app.async
 ===============
 
+This repository is archived.  It won't work on Python 3.6 or higher because `async` is a registered keyword there.
+
 Introduction
 ============
 Integration package for `zc.async`_ allowing asynchronous operations in Plone 4 and 5.
